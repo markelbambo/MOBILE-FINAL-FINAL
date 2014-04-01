@@ -179,7 +179,11 @@ function login() {
 				loading('hide');
 				globalLoginFlag = 0;
 			}
-		}
+		},
+      	error: function () {
+	        alert("Server not available");
+			signout();
+      	}
 	});
 }
 

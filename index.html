@@ -151,8 +151,8 @@
         <div data-role="header" data-theme="d"  data-position="fixed">
             <h2>Load Active</h2>
         </div>
-        <div data-role="content" data-theme="a">
-			<div style="margin: 20px auto 0 auto;width:400px;">
+        <div data-theme="a">
+			<div style="margin: 85px auto 0 auto;width:400px;">
 				<div data-role="controlgroup" data-type="horizontal" data-mini="true" style="text-align:right" >
 					<input type="checkbox" name="checkbox-h-2a" id="cbShowAll"><label id="cbShowAllLabel" for="cbShowAll">Show all reservation</label>
 					<a id="LoadActiveButton" href="#" style="width:100px;" data-role="button" data-mini="true">Load</a>
@@ -1908,6 +1908,21 @@
 		</div>
 	</div>
 </div>
+<div data-role="popup" id="confirmationloadactive" data-dismissible="false"  data-corners="true" data-disabled="false" data-shadow="true" data-overlay-theme="a" data-position-to="window" data-mini="true" style="min-height:150px;min-width:200px;display:none;background-color:white;border:0px;">
+	<div style="text-align:center;padding:10px;" data-role="header" data-theme="d" role="banner" class="ui-header ui-bar-gloss" id="confirmationHeaderloadactive"></div>
+		<br/>
+		<div id="confirmationBodyloadactive" style="padding: 10px;text-align: center;min-height: 30px;overflow:auto;"></div>
+		<div id="cancelResCheckboxloadactive" style="text-align: center;display:none;">
+			<input type="checkbox" id="clearCanvasCancelPromptloadactive">Release Reservation<br/><span style='font-size:10.5px;color:red'>Note : </span><span style='font-size:10.5px'>Reservation of the device/s in the canvas will be released.</span>
+		</div>
+
+		<div align="center" style="padding: 5px;">
+			<button id="confirmYesload" href="#" data-role="button" data-mini="true" data-theme="d" data-inline="true" class="ui-btn-gloss">Yes</button>
+			<button id="confirmNoload" href="#" data-role="button" data-mini="true" data-theme="d" data-inline="true" class="ui-btn-gloss">No</button>
+		</div>
+	</div>
+</div>
+
 <div data-role="popup" id="autoDConfirmChange" data-dismissible="false"  data-corners="true" data-disabled="false" data-shadow="true" data-overlay-theme="a" data-position-to="window" data-mini="true" style="min-height:150px;min-width:200px;display:none;background-color:white;border:0px;">
 	<div style="text-align:center;padding:10px;" data-role="header" data-theme="d" role="banner" class="ui-header ui-bar-gloss" id="autoDconfirmHeader">Confirm Auto Discovery</div>
 		<br/>
