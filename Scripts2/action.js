@@ -732,6 +732,13 @@ function cancelReservation(flag){
 			async:false,
         	dataType: 'html',
 	        success: function(data) {
+				setTimeout(function(){
+					if(globalDeviceType == "Mobile"){
+			        	loading('hide');
+				    }else{
+						ajaxLoader('hide');
+					}
+				},300);
 				data = $.trim(data);
 				if(ReleaseFlagLoadActive == true){
 					ReleaseFlagLoadActive = false;
@@ -749,7 +756,6 @@ function cancelReservation(flag){
 	                var obj = jQuery.parseJSON(data);
 					if(obj.MAINCONFIG != null && obj.MAINCONFIG != undefined && obj.MAINCONFIG != ""){
     	            	removespecificconfig();
-						console.log("flag >>>" + flag);
 						if(flag != true){
 		                	getDataFromJSON(obj);
 							globalMAINCONFIG[pageCanvas].MAINCONFIG[0].Interval = "";
@@ -763,13 +769,6 @@ function cancelReservation(flag){
 						}else{
 							drawImage();
 						}
-						setTimeout(function(){
-							if(globalDeviceType == "Mobile"){
-			            		loading('hide');
-						    }else{
-								ajaxLoader('hide');
-							}
-						},300);
 					}else{
 						checkProcessExecuted(obj,flag);	
 					}

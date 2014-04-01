@@ -6952,7 +6952,7 @@ function loadDevicesHTML5(){
 			}
             for(var a =0; a< json.root[0].row.length; a++){
 
-				html += "<tr class='trDevices "+tableClass+"' devId = '"+json.root[0].row[a].DeviceId+"' rId='"+json.root[0].row[a].ResourceId+"'>";
+				html += "<tr id='tr"+json.root[0].row[a].DeviceId+"' class='trDevices "+tableClass+"' devId = '"+json.root[0].row[a].DeviceId+"' rId='"+json.root[0].row[a].ResourceId+"'>";
 				html += "<td><input type='checkbox' devId = '"+json.root[0].row[a].DeviceId+"' id='"+json.root[0].row[a].DeviceId+"' name='ReservationDevicesSel' hostname='"+json.root[0].row[a].HostName+"' model='"+json.root[0].row[a].Model+"' onclick='checkSingleRM(\"ReservationDevices\");'/></td>";
 		        html += "<td class='ReservationDevices'>"+json.root[0].row[a].DeviceId+"</td>";
 		        html += "<td did='td"+json.root[0].row[a].DeviceId+"' class='toolTip' onclick='ShowDeviceInformation(\""+json.root[0].row[a].HostName+"\");' style='cursor:pointer;'><span>"+json.root[0].row[a].HostName+"</span><div class='tableToolTip' id='divtoolTip"+json.root[0].row[a].DeviceId+"' style='display:none'><ul>";
@@ -6966,8 +6966,8 @@ function loadDevicesHTML5(){
 				html += "<td>"+json.root[0].row[a].DomainName+"</td>";
 				html += "<td>"+json.root[0].row[a].ZoneName+"</td>";
 				html += "<td>"+json.root[0].row[a].GroupName+"</td>";
-				html += "<td><input style='border:none;text-align:center;' type='text' id='StartDate"+a+"' class='datepickerdev' readonly='yes' value='"+dateToday+"'/></td>";
-		        html += "<td><input style='border:none;text-align:center;' type='text' id='StartTime"+a+"' class='timepicker' readonly='yes' value='"+time+"' onchange='' /></td>";
+				html += "<td><input did='"+json.root[0].row[a].DeviceId+"' onchange='applySameDateTime(this);' style='border:none;text-align:center;' type='text' id='StartDate"+a+"' class='datepickerdev' readonly='yes' value='"+dateToday+"'/></td>";
+		        html += "<td><input did='"+json.root[0].row[a].DeviceId+"' onchange='applySameDateTime(this)' style='border:none;text-align:center;' type='text' id='StartTime"+a+"' class='timepicker' readonly='yes' value='"+time+"' onchange='' /></td>";
 				html += "<td><input style='border:none;text-align:center;' id='intervalRR' class='interval' type='text' onkeyup='setIteration(this.value);' onkeypress='return checkNumberInputChar(event,this);' value='0'/></td>";
 		        html += "<td><input style='border:none;text-align:center;' id='iterationRR"+a+"' class='iteration' type='text' onkeyup='setIteration(this.value)' onkeypress='return checkNumberInputChar(event,this);' value='1'/></td>";
 
@@ -6981,8 +6981,8 @@ function loadDevicesHTML5(){
 				}
 				html += "</select></td>";
 
-				html += "<td><input style='border:none;text-align:center;' id='EndDate"+a+"' type='text' readonly='yes' class='datepickerdev' value='"+dateToday+"'/></td>";
-		        html += "<td><input style='border:none;text-align:center;' id='EndTime"+a+"' type='text' onkeypress='return checkNumberInputChar(event,this);' class='timepicker' value='"+endTime+"'/></td>";
+				html += "<td><input style='border:none;text-align:center;' id='EndDate"+a+"' type='text' did='"+json.root[0].row[a].DeviceId+"'  readonly='yes' class='datepickerdev' value='"+dateToday+"' onchange='applySameDateTime(this);'/></td>";
+		        html += "<td><input did='"+json.root[0].row[a].DeviceId+"' onchange='applySameDateTime(this);' style='border:none;text-align:center;' id='EndTime"+a+"' type='text' onkeypress='return checkNumberInputChar(event,this);' class='timepicker' value='"+endTime+"'/></td>";
 				html +="</tr>";
 				
 			}
@@ -10222,4 +10222,46 @@ function setIteration(val){
 		alerts('Invalid Input');
 	}
 
+}
+function applySameDateTime(obj){
+	var date = new Date();
+	var month = parseInt(date.getMonth())+1;
+	if(month < 10 ){
+		month = "0"+month;		
+	}
+	var day = date.getDate();
+	if(day < 10){
+		day = "0"+day;
+	}
+	var dateToday = date.getMonth()+1+'/'+date.getDate()+'/'+date.getFullYear()
+
+	var time = convertTime();
+	var dataArr  = time.split(":");
+	var endTime = parseInt(dataArr[0])+2+":"+dataArr[1]+":"+dataArr[2];
+	var startTime = parseInt(dataArr[0])+":"+dataArr[1]+":"+dataArr[2];
+
+	var trId = $(obj).attr('did'); //
+	var sdate = $('#tr'+trId).find('td').eq(11).find('input').val();	
+	var stime =  $('#tr'+trId).find('td').eq(12).find('input').val();	
+	var edate =  $('#tr'+trId).find('td').eq(16).find('input').val();	
+	var etime =  $('#tr'+trId).find('td').eq(17).find('input').val();	
+	var iter =  $('#tr'+trId).find('td').eq(13).find('input').val();	
+	var interval =  $('#tr'+trId).find('td').eq(14).find('input').val();	
+	$('.trDevices').each(function(){
+		if($(this).find('td').eq(0).find('input').is(':checked')){
+			$(this).find('td').eq(11).find('input').val(sdate);
+			$(this).find('td').eq(12).find('input').val(stime);
+			$(this).find('td').eq(16).find('input').val(edate);
+			$(this).find('td').eq(17).find('input').val(etime);
+			$(this).find('td').eq(13).find('input').val(iter);
+			$(this).find('td').eq(14).find('input').val(interval);
+		}else{
+			$(this).find('td').eq(11).find('input').val(dateToday);
+			$(this).find('td').eq(12).find('input').val(startTime);
+			$(this).find('td').eq(16).find('input').val(dateToday);
+			$(this).find('td').eq(17).find('input').val(endTime);
+			$(this).find('td').eq(13).find('input').val(1);
+			$(this).find('td').eq(14).find('input').val(0);
+		}
+	});
 }

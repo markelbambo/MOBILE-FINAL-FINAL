@@ -400,7 +400,7 @@ function loadUserTable(){
 			for (var a=0;a<jsonData.data[0].row.length;a++){
 				var row = jsonData.data[0].row[a];
 				if(globalDeviceType != "Mobile"){
-					str += "<tr id='trUser"+row.UserId+"'><td><input type='checkbox' class='trUser "+tableClass+"' uid='"+row.UserId+"' name='trUser' /></td>";
+					str += "<tr id='trUser"+row.UserId+"'><td><input type='checkbox' class='trUser "+tableClass+"' uid='"+row.UserId+"' name='trUser' onclick=\"AdminCheckSingle();\" /></td>";
 				}else{
 					str += "<tr class='trUser' uid='"+row.UserId+"'>";
 				}
@@ -467,7 +467,7 @@ function loadGroupTable(){
         			}else{
         			    var tableClass = '';
         			}
-					str += "<tr id='tradminGroup"+row.GroupId+"' class='"+tableClass+"'><td><input type='checkbox' rpId='"+row.ResourceProfileId+"' zoneName='"+row.ZoneName+"' groupId='"+row.GroupId+"'  name='adminGroupSel' class='trGroup' gid='"+row.GroupId+"' onclick='AdminCheckSingle(\"AdminGroups\")'/></td>";
+					str += "<tr id='tradminGroup"+row.GroupId+"' class='"+tableClass+"'><td><input type='checkbox' rpId='"+row.ResourceProfileId+"' zoneName='"+row.ZoneName+"' groupId='"+row.GroupId+"'  name='adminGroupSel' class='trGroup' gid='"+row.GroupId+"' onclick=\"AdminCheckSingle('AdminGroups');\"/></td>";
 				}else{
 					str += "<tr class='trGroup' id='tradminGroup"+row.GroupId+"' gid='"+row.GroupId+"'>";
 				}
@@ -529,7 +529,7 @@ function loadDomainTable(){
 			for (var a=0;a<jsonData.data[0].row.length;a++){
 				var row = jsonData.data[0].row[a];
 				if(globalDeviceType != "Mobile"){
-					str += "<tr id='trDomain"+row.ResourceDomainId+"' class='"+tableClass+"'><td><input type='checkbox' class='trDomain' did='"+row.ResourceDomainId+"'/></td>";
+					str += "<tr id='trDomain"+row.ResourceDomainId+"' class='"+tableClass+"'><td><input type='checkbox' class='trDomain' did='"+row.ResourceDomainId+"' onclick=\"AdminCheckSingle();\" name='trDomain'/></td>";
 				}else{
 					str += "<tr class='trDomain' did='"+row.ResourceDomainId+"'>";
 				}
@@ -553,6 +553,7 @@ function loadDomainTable(){
 			checkSingleMain('trDomain', 'did');
 		}
 	});
+	globalAdminPage = "Domain";
 }
 
 /*
@@ -594,7 +595,7 @@ function loadAccRightsTable(){
         			}else{
         			    var tableClass = '';
         			}
-					str += "<tr id='tr"+row.AccessRightsId+"' class='"+tableClass+"'><td><input type='checkbox' class='trAccRights' accrigid='"+row.AccessRightsId+"'/></td>";
+					str += "<tr id='tr"+row.AccessRightsId+"' class='"+tableClass+"'><td><input type='checkbox' class='trAccRights' accrigid='"+row.AccessRightsId+"' onclick=\"AdminCheckSingle();\" name='trAccRights'/></td>";
 				}else{
 					str += "<tr class='trAccRights' accrigid='"+row.AccessRightsId+"'>";
 				}
@@ -9210,6 +9211,62 @@ function AdminCheckSingle(table){
 				ctr--;
 			}
 		});
+	}else if(globalAdminPage == "Users"){
+		$('input:checkbox[name="trUser"]').each(function(){
+			if($(this).is(':checked')){
+				$(this).parent().parent().addClass('highlight');
+				ctr++;
+			}else{
+				$(this).parent().parent().removeClass('highlight');
+				$('#adminSelectAll').prop('checked', false);
+				ctr--;
+			}
+		});
+		if (ctr == globalSelectedAdminMain.length+1){
+			$('#adminSelectAll').prop('checked', true);
+		}
+	}else if(globalAdminPage == "Domain"){
+		$('input:checkbox[name="trDomain"]').each(function(){
+			if($(this).is(':checked')){
+				$(this).parent().parent().addClass('highlight');
+				ctr++;
+			}else{
+				$(this).parent().parent().removeClass('highlight');
+				$('#adminDomainSelectAll').prop('checked', false);
+				ctr--;
+			}
+		});
+		if (ctr == globalSelectedAdminMain.length+1){
+			$('#adminDomainSelectAll').prop('checked', true);
+		}
+	}else if(globalAdminPage == "AccRights"){
+		$('input:checkbox[name="trAccRights"]').each(function(){
+			if($(this).is(':checked')){
+				$(this).parent().parent().addClass('highlight');
+				ctr++;
+			}else{
+				$(this).parent().parent().removeClass('highlight');
+				$('#adminaAccessrightSelectAll').prop('checked', false);
+				ctr--;
+			}
+		});
+		if (ctr == globalSelectedAdminMain.length+1){
+			$('#adminaAccessrightSelectAll').prop('checked', true);
+		}
+/*	}else if(globalAdminPage == "Device"){
+		$('input:checkbox[name="ManageDevicesSel"]').each(function(){
+			if($(this).is(':checked')){
+				$(this).parent().parent().addClass('highlight');
+				ctr++;
+			}else{
+				$(this).parent().parent().removeClass('highlight');
+				$('#ManageDevCheckbox').prop('checked', false);
+				ctr--;
+			}
+		});
+		if (ctr == globalSelectedAdminMain.length+1){
+			$('#ManageDevCheckbox').prop('checked', true);
+		}*/
 	}
 }
 function checkGAddBind(){

@@ -485,6 +485,7 @@ function getDataFromJSON(obj){
 function removespecificconfig(){
 	for(var a=0; a< globalMAINCONFIG.length;a++){
        if(globalMAINCONFIG[a].MAINCONFIG[0].PageCanvas == pageCanvas){
+		   window['variable' + dynamicResourceId[pageCanvas] ] = "";
            globalMAINCONFIG.splice(a,1);
            a = globalMAINCONFIG.length
         }

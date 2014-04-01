@@ -1672,14 +1672,6 @@ function appendToDeviceListTable2(data,condition,load, tabSelected)	{
 	if(globalDeviceType != "Mobile"){
 		hoverTable();
 	}
-	$(".trManageDevice").each(function(){
-		var dName = $(this).attr('DeviceName');
-		for(var q=0; q<globalSelectedDeviceList.length; q++){
-			if(globalSelectedDeviceList[a] == dName){				
-				$(this).addClass('highlight');
-			}
-		}
-	});	
 	$(".trManageDevice").on("click",function(){	
 		if (load.toLowerCase()=="tooltipdevice" ){
 			$('.trManageDevice').each(function(){
@@ -1732,6 +1724,12 @@ function appendToDeviceListTable2(data,condition,load, tabSelected)	{
 		}
 		fullHubDisEna();
 	});
+	$(".trManageDevice").each(function(){
+		var dName = $(this).attr('DeviceName');
+		if(globalSelectedDeviceList.indexOf(dName)!=-1){
+			$(this).trigger('click');
+		}
+	});	
 }
 
 /*
@@ -1831,7 +1829,7 @@ function reCreateDock(){
         return;
     }
     $("#osxDocUL").append(str);
-	var tots = 40 * devCounter;
+	var tots = 40 * dckCtr;
 	var el = $("#dockWrapper");
     var w = el.width() + tots;
 	var dvded = -Math.abs(w / 2);
@@ -9782,7 +9780,7 @@ function accSanXML(uptable,lowtable){
 	return;
 }
 function accSanXML2(devFlag){
-	if(devFlag == false && globalMAINCONFIG[pageCanvas].MAINCONFIG[0].Connectivity.toString() == "false" && globalMAINCONFIG[pageCanvas].MAINCONFIG[0].LinkSanityEnable.toString() == "false" && EnableInterface.toString() == "false" && globalMAINCONFIG[pageCanvas].MAINCONFIG[0].LoadImageEnable.toString() == "false" && globalMAINCONFIG[pageCanvas].MAINCONFIG[0].LoadConfigEnable.toString() == "false"){
+	if(devFlag == false && globalMAINCONFIG[pageCanvas].MAINCONFIG[0].Connectivity.toString() == "false" && globalMAINCONFIG[pageCanvas].MAINCONFIG[0].LinkSanityEnable.toString() == "false" && globalMAINCONFIG[pageCanvas].MAINCONFIG[0].EnableInterface.toString() == "false" && globalMAINCONFIG[pageCanvas].MAINCONFIG[0].LoadImageEnable.toString() == "false" && globalMAINCONFIG[pageCanvas].MAINCONFIG[0].LoadConfigEnable.toString() == "false"){
 		accSanFlag = "false";
 	}
 	if(devFlag == true){
@@ -11921,7 +11919,7 @@ function dynamicCanvas(num){
 	$("#configContent"+pageCanvas).css("cursor","default");
     $("#Magnify").attr("title","Zoom");
     zoomButtonStatus = "inactive";
-	if(globalDeviceType == "Mobile" && divctr == 3){
+	if(globalDeviceType == "Mobile" && divctr == 2){
         error("Canvas limit reached.","Notification");
         return;
     }
@@ -16320,26 +16318,21 @@ function deviceSession(e,val){
 			proccessData: false,
 			async:false,
     	    success: function(data) {
-				/*var dat = data.replace(/'/g,'"');
-				dat = dat.split(">").join(",,");
-				var json = $.parseJSON(dat);
-				var parsed =json.RESULT[0].Result;
-				if(parsed != ""){
-					parsed = parsed.split(",,").join(">");*/
 				if(data != ""){
 					data = data.split("::").join("\n");
 					$("#consoledevice").val(data);
-					getActiveUser();
-					clearInterval(setInt);
-					setInt ="";
-					globalRefresh = true;
-            		refreshConsole();
 				}
+				getActiveUser();
+				clearInterval(setInt);
+				setInt ="";
+				globalRefresh = true;
+            	refreshConsole();
 			}
 		});
 		$('#consoletext').val("");
 	}
 }
+
 /*FUNCTION NAME :refreshConsole
  *AUTHOR        :Mary Grace P. Delos Reyes
  *DATE          :March 14, 2014

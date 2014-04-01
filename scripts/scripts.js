@@ -817,7 +817,7 @@ $(document).on('click', "#dlistDone", function(){
 });
 $(document).on('click', "#dlistApply", function(){
 	dragtoTrashDeviceOnly(glblDevMenImg,gblDevMenX,gblDevMenY,"true");
-	createQueryMapLink(globalSelectedDeviceList,globalDeviceListLoad);
+//	creatQueryMapLink(globalSelectedDeviceList,globalDeviceListLoad);
 	setTimeout(function(){
 		deviceListPopupTable(globalDeviceListLoad,globalDevListTab);
 		configEditorManageDevice = false; // to stop objpath 
@@ -1587,7 +1587,7 @@ $( document ).on( "pageinit", "#configEditorPage", function( event ) {
         $("#clearcanvas").attr("src","img/action_buttons/clear.png");
         $("#committopology").attr("src","img/action_buttons/commit.png");*/
 		if(window['variable' + dynamicResourceId[pageCanvas] ] != "" && window['variable' + dynamicResourceId[pageCanvas] ] != undefined && window['variable' + dynamicResourceId[pageCanvas] ] != null){
-			var todo = "addHistory('Cancel Reservation');cancelReservation();";
+			var todo = "addEvent2History('Cancel Reservation');cancelReservation();";
 			confirmation("Are you sure you want to cancel<br/>the topology on the canvas?","Notification",todo,"",true);
 		}else{
             error("Please load an active reservation to cancel.","Notification");
@@ -3337,13 +3337,15 @@ $(document).on("click", "#cancelDeviceConf", function () {
 $(document).on("click", "#btnDoneResult", function () {
 	clearTimeout(TimeOut);	
 //	SanityFlag =  false;
-	dialog('close');
+//	dialog('close');
 	cancelLoadSaveQuery('done');
+	toConfig();
 });
 $(document).on("click", "#btnCancelResult", function () {
 	clearTimeout(TimeOut);	
 //	SanityFlag =  false;
 	cancelLoadSaveQuery('cancel',globalSanityFeature);
+	toConfig();
 });
 $(document).on("click", "#btnRefreshResult", function () {
 	clearTimeout(TimeOut);	
