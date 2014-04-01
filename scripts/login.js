@@ -90,8 +90,9 @@ function ValidateIPaddress(ipaddress){
 	if (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ipaddress)){
 		return "true";
 	} else{
+        loading("hide");
 	  	error("You have entered an invalid IP address!","Notification");
-    	return "false";
+        return "false";
 	}
 } 
 
@@ -119,7 +120,12 @@ function login() {
 		var vald = ValidateIPaddress(IPTxt);
 		if(vald =="true"){
 			CURRENT_IP = IPTxt;
-		}
+		}else{
+            setTimeout(function(){
+                 signout();
+            },1500);
+            return;
+        }
     }	
 	
 	globalUserName = usrName;
@@ -129,7 +135,7 @@ function login() {
 	var urls = getURL("ADMIN1","JSON")+"action=Authenticate&query="+query;//User="+usrName+"^Pass="+pass;
 	$.ajax({
 		url: urls,
-		timeout: 120000,
+		timeout: 10000,
 		dataType: 'html',
 		success: function(data) {
 			globalDeviceType = 'Mobile';
