@@ -491,6 +491,7 @@ var PMDeviceId = '';
 var outletBinding = [];
 var selectedOutletPower = "";
 var PMip = [];
+var globalSelectedPowerMain = [];
 
 /* AUTO DISCOVERY */
 var initAutoD;

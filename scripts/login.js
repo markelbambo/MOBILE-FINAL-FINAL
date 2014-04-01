@@ -90,9 +90,9 @@ function ValidateIPaddress(ipaddress){
 	if (/^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ipaddress)){
 		return "true";
 	} else{
-        loading("hide");
+		loading("hide");
 	  	error("You have entered an invalid IP address!","Notification");
-        return "false";
+    	return "false";
 	}
 } 
 
@@ -123,7 +123,7 @@ function login() {
 		}else{
             setTimeout(function(){
                  signout();
-            },1500);
+            },2000);
             return;
         }
     }	

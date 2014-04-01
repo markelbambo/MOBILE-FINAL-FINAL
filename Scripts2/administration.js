@@ -103,6 +103,7 @@ $(document).on('click', '#cancelUser', function(){
 $(document).on('click', '#saveUser', function(){
 	if (globalDeviceType.toLowerCase() != "mobile"){
 		saveAddEditUser();
+		loadUserTable();
 	}
 });
 /*$(document).on('click', '#saveEditedEmailPopUp', function(){
@@ -1219,17 +1220,17 @@ function loadResDomTable(){
 					globalUserDomainNames.push(domName);
 				}
 			}
+			}
 			$('#userDomainsAdmin-table > tbody').empty().append(str);
 			if (globalDeviceType == 'Mobile'){
 				$("#userDomainsAdmin-table").table("refresh");
 			}
-			domainIdHighlight();
 			checkSelectedDynamic('trUserDomain');
+			domainIdHighlight();
 			if (globalDynamicSelected.length == 0){
 				$('#userZoneGroupTab').hide();
 			}
 			createZoneDynamicTab(globalUserDomainNames,globalUserDomainIds);
-		}
 		}
 	});
 }
@@ -1259,9 +1260,15 @@ function checkSelectedDynamic(trid){
 			for (var i=0;i<globalDynamicSelected.length;i++){
 				$('#'+trid+globalDynamicSelected[i]).children().find('input').attr('checked',true);
 				var id = globalDynamicSelected[i];
+				if (trid == 'trUserDomain'){
 					if($.inArray(id,globalUserDomain2Ids) == -1){
-						globalUserDomain2Ids.push(globalDynamicSelected[i])
+						globalUserDomain2Ids.push(id);
 					}
+				}else if (trid == 'trUserZone'){
+					if($.inArray(id,globalUserZone2Ids) == -1){
+						globalUserZone2Ids.push(id);
+					}
+				}
 			}
 		}
 	}
@@ -1315,6 +1322,7 @@ function loadBindedZone(rdid){
 					str += "</tr>";
 					if ($.inArray(zoneId,globalUserZoneIds) == -1){
 						globalUserZoneIds.push(zoneId);
+						
 					}
 					if ($.inArray(zoneId,globalDynamicSelected) == -1){
 						globalDynamicSelected.push(zoneId);
@@ -1335,6 +1343,7 @@ function loadBindedZone(rdid){
 				$('#domZoneGroupDiv').hide();
 			}
 			createGroupDynamicTab(rdid,globalUserZoneNames,globalUserZoneIds);
+			
 		}
 	});
 }
@@ -1460,8 +1469,13 @@ function loadUserData(id){
 				oldusername = user;
 				var userlevel = row.UserLevel;
 				if (user == 'admin' || user == 'manager') {
-					$('#addtxtUserName').textinput('disable');
-					$('#addtxtUserLevel').selectmenu('disable');
+					if (globalDeviceType == 'Mobile'){
+						$('#addtxtUserName').textinput('disable');
+						$('#addtxtUserLevel').selectmenu('disable');
+					} else {
+						$('#addtxtUserName').attr('disabled',true);
+						$('#addtxtUserLevel').attr('disabled',true);
+					}
 				}
 				if (user == globalUserName) {
 					$('#addtxtUserLevel').attr('disabled',true);
@@ -1725,7 +1739,7 @@ function loadDirectReport(flag,username,userlevel,id){
 		success: function (data) {
 			var str = "";
 			//if (globalDeviceType == 'Mobile'){
-				str += "<option data-placeholder='true'>Manager</option>";
+				str += "<option data-placeholder='true' value=''>Select One</option>";
 			//}
 			data = data.replace(/'/g,'"');
 			var jsonData = jQuery.parseJSON(data);
@@ -1903,33 +1917,34 @@ function domainIdHighlight() {
 		if (cond){
 			if($.inArray(id, globalUserDomain2Ids) == -1){
 				globalUserDomain2Ids.push(id);
-				globalUserDomain2Names.push(name);
+				globalUserDomainNames.push(name);
 				if(globalDeviceType != "Mobile"){
 					$('#trUserDomain'+id).addClass('highlight');
 				}else{
 					$(this).addClass('highlight');
 				}
 			}
-			createZoneDynamicTab(globalUserDomain2Names,globalUserDomain2Ids);
+			createZoneDynamicTab(globalUserDomainNames,globalUserDomain2Ids);
 			$('#userZoneGroupTab').show();
 		}else{
 			var pos = globalUserDomain2Ids.indexOf(id);
-			var pos2 = globalUserDomain2Names.indexOf(name);
+			var pos2 = globalUserDomainNames.indexOf(name);
 			var pos3 = globalDynamicSelected.indexOf(id);
 			globalUserDomain2Ids.splice(pos,1);
 			globalDynamicSelected.splice(pos3,1);
-			globalUserDomain2Names.splice(pos2,1);
+			globalUserDomainNames.splice(pos2,1);
 			if(globalDeviceType != "Mobile"){
 				$('#trUserDomain'+id).removeClass('highlight');
 			}else{
 				$(this).removeClass('highlight');
 			}
-			createZoneDynamicTab(globalUserDomain2Names,globalUserDomain2Ids);
 			if (globalUserDomain2Ids.length == 0){
 				$('#userZoneGroupTab').hide();
 			}
+			createZoneDynamicTab(globalUserDomainNames,globalUserDomain2Ids);
 		}
 	});
+	
 }
 
 /*
@@ -2016,6 +2031,7 @@ function changeAdminPage(num){
     }
 	if(num == 10){
 		genIds = [];
+		enDisEditDelBtnManageDev()
 		globalAdminPage = 'Device';
 	}
 	CurrentPage = "panel";
@@ -2275,6 +2291,12 @@ function checkAllPopUpAdminTable(id,tableclass,globalarray,valID){
 				window[globalarray].push(value)
 			}
 	   });
+		if (tableclass == 'trUserDomain'){
+			if (globalUserDomain2Ids.length != 0){
+				createZoneDynamicTab(globalUserDomainNames,globalUserDomain2Ids);
+				$('#userZoneGroupTab').show();
+			}
+		}
 	}else{
 		$("."+tableclass).each(function(){
 			$('.'+tableclass).prop('checked',false);
@@ -2282,6 +2304,9 @@ function checkAllPopUpAdminTable(id,tableclass,globalarray,valID){
 				window[globalarray].splice(0,window[globalarray].length);
 			}
 		});
+		if (tableclass == 'trUserDomain'){
+			$('#userZoneGroupTab').empty().hide();
+		}
    }
 }
 
@@ -2373,12 +2398,30 @@ function createZoneDynamicTab(name,id){
 	str += "<div id='domZoneDiv'></div></div>";
     $('#userZoneGroupTab').empty().append(str);
 	$('#zonenavbar').tabs();
+	toggleCheckAll('trUserDomain','addUserDomainSelectAll');
 	if (globalDeviceType == 'Mobile'){
 		$('#addUserPopUp').trigger('create');
 	}
 	$( "#domZoneDiv" ).empty().load('pages/Admin/UserDomainZone.html',function(){
 		loadBindedZone(id[0]);
 	});
+}
+
+function toggleCheckAll(cb,ca){
+	var ctr = "";
+	var ctr2 = "";
+	$('.'+cb).each(function(){
+		ctr++;
+		if ($(this).is(':checked')){
+			ctr2++;		
+		}
+	});
+	if (ctr != ctr2){
+		$('#'+ca).attr('checked',false);
+	}else{
+		$('#'+ca).attr('checked',true);
+
+	}
 }
 
 /*
@@ -2841,7 +2884,6 @@ function gatherServerQuery(url){
 var Interfaces=[];
 var SourcePopup;
 function addServerContent(host, ntp, intr, gt){
-	console.log(host+' '+ntp+' '+intr+' '+gt);
 	var intSplit=[];var intVal=[];
 	var mngtStr="";var ctrlStr="";
 	$( "#AdminPopUp" ).dialog({
@@ -3984,7 +4026,7 @@ function loadCountry(selbox){
 		success: function (data) {
 			var str = "";
 	//		if (globalDeviceType == 'Mobile'){
-				str += "<option data-placeholder='true'>Country</option>";
+				str += "<option data-placeholder='true'>Select One</option>";
 	//		}
 			var countries = "";
 			data = data.replace(/'/g,'"');
@@ -4205,7 +4247,7 @@ function newCompany(val){
 	});
 }
 
-function validateCountryCompany(flag,name){
+function validateCmuntryCompany(flag,name){
 	var url =  getURL('ADMIN2', 'JSON')+"action=validateCountryCompany&query={'QUERY': [{'flag': '"+flag+"', 'name': '"+name+"', 'userid': '"+userInformation[0].userId+"'}]}";
 	var retcerd;
 	$.ajax({
@@ -4272,7 +4314,7 @@ function loadCompany(selbox){
 		success: function (data) {
 			var str = "";
 	//		if (globalDeviceType == 'Mobile'){
-				str += "<option data-placeholder='true'>Company</option>";
+				str += "<option data-placeholder='true'>Select One</option>";
 	//		}
 			var companies = "";
 			data = data.replace(/'/g,'"');
@@ -6712,42 +6754,42 @@ function changeContactFormat(id){
 		var country = document.getElementById("edittxtCountry").value;
 		var divName="editPhoneNoFormat";
 	}
-	if(country=='Philippines')	{
+	if(country.toLowerCase()=='philippines')	{
 		$("#"+divName).empty();
 		$("#"+divName2).empty();
 		$("#"+divName2).append('+63-(xxx)-xxx-xxxx');
 		$("#"+divName).append('+63-(xxx)-xxx-xxxx');
-	}else if(country=='United States')	{
+	}else if(country.toLowerCase()=='united states')	{
 		$("#"+divName).empty();
 		$("#"+divName2).empty();
 		$("#"+divName2).append('+1-(xxx)-xxx-xxxx');
 		$("#"+divName).append('+1-(xxx)-xxx-xxxx');
-	}else if(country=='United Kingdom')	{
+	}else if(country.toLowerCase()=='united kingdom')	{
 		$("#"+divName).empty();
 		$("#"+divName2).empty();
 		$("#"+divName2).append('+44-(xxx)-xxxx-xxxx');
 		$("#"+divName).append('+44-(xxx)-xxxx-xxxx');
-	}else if(country=='Singapore')	{
+	}else if(country.toLowerCase()=='singapore')	{
 		$("#"+divName).empty();
 		$("#"+divName2).empty();
 		$("#"+divName2).append('+65-xxxx-xxxx');
 		$("#"+divName).append('+65-xxxx-xxxx');
-	}else if(country=='Russian Federation')	{
+	}else if(country.toLowerCase()=='russian federation')	{
 		$("#"+divName).empty();
 		$("#"+divName2).empty();
 		$("#"+divName2).append('+7-(xxx)-xxx-xxxx');
 		$("#"+divName).append('+7-(xxx)-xxx-xxxx');
-	}else if(country=='Japan')	{
+	}else if(country.toLowerCase()=='japan')	{
 		$("#"+divName).empty();
 		$("#"+divName2).empty();
 		$("#"+divName2).append('+81-(xxx)-xxxx-xxxx');
 		$("#"+divName).append('+81-(xxx)-xxxx-xxxx');
-	}else if(country=='China')	{
+	}else if(country.toLowerCase()=='china')	{
 		$("#"+divName).empty();
 		$("#"+divName2).empty();
 		$("#"+divName2).append('+86-(xxx)-xxxx-xxxx');
 		$("#"+divName).append('+86-(xxx)-xxxx-xxxx');
-	}else if(country=='India')	{
+	}else if(country.toLowerCase()=='india')	{
 		$("#"+divName).empty();
 		$("#"+divName2).empty();
 		$("#"+divName2).append('+91-(xxx)-xxxx-xxxx');
@@ -9032,7 +9074,6 @@ function addEditUserInit(){
 	loadCountry('addtxtCountry');
 	loadCompany('addtxtCompany');
 	populateDurationCombo();
-	defaultReserveLimitValues();
 
 	if (globalAdminFunc == "add"){
 		if ($.inArray('1',globalUserDomainIds) == -1){
@@ -9048,6 +9089,7 @@ function addEditUserInit(){
 			globalAccActiveStatus.push('1');
 		}	
 		addUserOnLoad();
+		defaultReserveLimitValues();
 	}else if (globalAdminFunc == "edit"){
 		loadDirectReport('edit','','',globalSelectedAdminMain[0]);
 		loadUserData(globalSelectedAdminMain);
@@ -9753,10 +9795,13 @@ function addUserDom(){
 }
 
 function removeUserDom(){
-	for(var i=0;i<globalUserDomainIds.length;i++){
-		var pos = globalDynamicSelected.indexOf(globalUserDomainIds[i]);
+	for(var i=0;i<globalUserDomain2Ids.length;i++){
+		var pos = globalDynamicSelected.indexOf(globalUserDomain2Ids[i]);
+		var pos2 = globalUserDomainIds.indexOf(globalUserDomain2Ids[i]);
+		var pos4 = globalUserDomainNames.indexOf(globalUserDomain2Ids[i]);
+		globalUserDomainIds.splice(pos2,1);
 		globalDynamicSelected.splice(pos,1);
-		globalUserDomainNames.splice(i,1);
+		globalUserDomainNames.splice(pos4,1);
 		for (var a=0;a<globalDomActiveStatus.length;a++){
 			if (globalUserDomainIds[i] == globalDomActiveStatus[a]){
 				globalDomActiveStatus.splice(i,1);
@@ -9766,7 +9811,8 @@ function removeUserDom(){
 			}
 		}
 	}
-	globalUserDomainIds = [];
+	globalUserDomain2Ids = [];
+	toggleCheckAll('trUserDomain','addUserDomainSelectAll');
 	loadResDomTable();
 }
 
@@ -10842,7 +10888,20 @@ function getDomAddDPSIds() {
 	});
 }
 
-
+/*
+ #######################################################################
+ #
+ #  FUNCTION NAME : checkAllAdminDevices
+ #  AUTHOR        : Cathyrine C. Bobis
+ #  DATE          : March 31, 2014
+ #  MODIFIED BY   : 
+ #  REVISION DATE :
+ #  REVISION #    : 
+ #  DESCRIPTION   : 
+ #  PARAMETERS    : 
+ #
+ #######################################################################
+*/
 function checkAllAdminDevices(obj){
 	var flag = $(obj).is(':checked');
 	$('input:checkbox[name="ManageDevicesSel"]').each(function(){
@@ -10852,6 +10911,20 @@ function checkAllAdminDevices(obj){
 	});
 }
 
+/*
+ #######################################################################
+ #
+ #  FUNCTION NAME : enDisEditDelBtnManageDev
+ #  AUTHOR        : Cathyrine C. Bobis
+ #  DATE          : March 31, 2014
+ #  MODIFIED BY   : 
+ #  REVISION DATE :
+ #  REVISION #    : 
+ #  DESCRIPTION   : 
+ #  PARAMETERS    : 
+ #
+ #######################################################################
+*/
 function enDisEditDelBtnManageDev(){
 	if(genIds.length==1){
 		$('#EditButton').removeClass('ui-state-disabled');
@@ -12032,7 +12105,7 @@ function saveAddEditDom(){
 				qstr += "','InactivePowerPolicy':'"/*+globalPowerManagementInActive*/;		
 				qstr += "','TimeZone':'"+$('#cbtimeZone').val();		
 				qstr += "','flag':'commit";		
-				qstr += emailres[0].servequery+"'}]}";
+				qstr += emailres[0].servequery;"'}]}";
 				version = "3.0";
 			}
 		break;
@@ -12083,7 +12156,8 @@ function checkDomFields(Name,Desc,tzone){
 	}
 
 	if (globalDomDPS2Ids.length == 0){
-		alertUser("Please ")
+		alertUser("Please select at least 1 DPS to bind.");
+		return true;
 	}
 }
 
@@ -12243,7 +12317,6 @@ function checkDomEmail(){
 function savePy(action, qstr, version, todo) {
 
     var url = getURL('ADMIN2','JSON');
-
     $.ajax({
         url: url,
 		data: {
@@ -12256,17 +12329,18 @@ function savePy(action, qstr, version, todo) {
         success: function(data) {
 			data = data.replace(/'/g,'"');
 	        var jsonData = $.parseJSON(data);
-            if (jsonData != "") {
-				var result = jsonData.RESULT[0].Result;
-                if (/edit/i.test(qstr) == true) {
-                    alertUser(result);
-                } else if (/add/i.test(qstr) == true) {
-                    alertUser(result);
-                } else {
+			var result = jsonData.RESULT[0].Result;
+			var flag =  jsonData.RESULT[0].Flag;
+			switch (flag){
+				case '1':
 	                alertUser(result);
-                }
-            } else {
-                alerts(result);
+					return;
+				break;
+				case '2':
+					var retflag = "','Flag':'3'}]}";
+					qstr += retflag;
+					alerts(result,"savePy("+action+","+qstr+","+version+","+todo+");");
+				break;
             }
             eval(todo);
         }
@@ -12628,3 +12702,109 @@ function selectDomAdmin(daid){
 	loadEmailInfoDomain();
 
 }*/
+/*
+ #######################################################################
+ #
+ #  FUNCTION NAME : deleteDomain
+ #  AUTHOR        : Anna Marie Paulo
+ #  DATE          : Apri; 1, 2014
+ #  MODIFIED BY   : 
+ #  REVISION DATE : 
+ #  REVISION #    : 
+ #  DESCRIPTION   : 
+ #  PARAMETERS    : 
+ #
+ #######################################################################
+*/
+
+function deleteDomain(){
+	var domName=[];
+	$("input:checkbox[name='trDomain']").each(function(){
+		if($(this).is(':checked')){
+			var id = $(this).attr('did');
+			domName.push($('#trDomain'+id).find('td').eq(1).text());
+		}
+	});
+	$('#AdminPopUp').dialog({
+		title: 'Delete Domain',
+		modal: true,
+		height: 'auto', 
+		width: 400,
+		resizable: false,
+		closeOnEscape: false,
+	    open: function(event, ui) { $(".ui-dialog-titlebar-close").hide(); },
+		buttons: {	
+			"Yes": function(){
+				checkDomainRestrict();
+				$(this).dialog('destroy');
+			},
+			"No": function(){
+				$(this).dialog('destroy');
+			}
+		}
+	});	
+	$('#AdminPopUp').text('Are you sure you want to DELETE the following domain(s)?\n\n'+domName);
+}
+/*
+ #######################################################################
+ #
+ #  FUNCTION NAME : checkDomainRestrict
+ #  AUTHOR        : Anna Marie Paulo
+ #  DATE          : Apri; 1, 2014
+ #  MODIFIED BY   : 
+ #  REVISION DATE : 
+ #  REVISION #    : 
+ #  DESCRIPTION   : 
+ #  PARAMETERS    : 
+ #
+ #######################################################################
+*/
+
+function checkDomainRestrict(){
+	var url = getURL('ADMIN2', 'JSON')+"action=DomainAdminRestriction&query={'QUERY': [{'User': '"+userInformation[0].userId+"', 'ResourceDomainId': '"+globalSelectedAdminMain+"'}]}";
+	$.ajax({
+		url: url,
+		dataType: 'html',
+		success: function(data){
+			data = data.replace(/'/g, '"');
+			var jData = $.parseJSON(data); 
+			var res = jData.RESULT[0].Result;
+				
+			if(res==1){
+				deleteDomainOk();
+			}else{
+				alerts('You are not allowed to delete the domain');
+			}
+		}
+	});
+}
+/*
+ #######################################################################
+ #
+ #  FUNCTION NAME : deleteDomainOk
+ #  AUTHOR        : Anna Marie Paulo
+ #  DATE          : Apri; 1, 2014
+ #  MODIFIED BY   : 
+ #  REVISION DATE : 
+ #  REVISION #    : 
+ #  DESCRIPTION   : 
+ #  PARAMETERS    : 
+ #
+ #######################################################################
+*/
+
+function deleteDomainOk(){
+	var url = getURL('ADMIN2', 'JSON')+"action=DeleteRPol&query={'QUERY': [{'RpolId': '"+globalSelectedAdminMain+"'}]}";
+	$.ajax({
+		url: url,
+		dataType: 'html',
+		success: function(data){
+			data = data.replace(/'/g, '"');
+			var jData = $.parseJSON(data);
+			var res = jData.RESULT[0].Result;
+			alerts(res);
+			loadDomainTable();	
+		}
+	});
+
+}

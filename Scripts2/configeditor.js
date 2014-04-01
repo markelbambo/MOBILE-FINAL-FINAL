@@ -966,14 +966,9 @@ function createTestToolObj(){
 		async:false,
 		success: function(data) {
 			var mydata = data;
-			if(globalInfoType == "XML"){
-				getDataForDeviceList(mydata);
-			}else{
-				data = data.replace(/'/g,'"');
-				var obj = jQuery.parseJSON(data);
-				getDataForDeviceListJSON(obj);
-			}
-
+			data = data.replace(/'/g,'"');
+			var obj = jQuery.parseJSON(data);
+			getDataForDeviceListJSON(obj);
 			if(globalDeviceType == "Mobile"){
 				loading('hide');
 			}else{
@@ -997,7 +992,7 @@ function createTestToolObj(){
  */
 var globalDeviceListLoad="";
 var importLocalFlag = [],globalDevListType='tableview';
-function deviceListPopupTable(load,tab){
+function deviceListPopupTable(load,tab,ApplyFlag){
 	if(globalDeviceType == "Mobile"){
 		loading("show");
 	}
@@ -1006,8 +1001,11 @@ function deviceListPopupTable(load,tab){
 	globalDeviceListLoad = load;
 	globalFlag = false;
 	checkLCArray=[]
-	//var hasDevName = getHasDevNameOnArray();
-	var hasDevName = globalSelectedDeviceList;
+	if(ApplyFlag!=undefined){
+		var hasDevName = globalSelectedDeviceList;
+	}else{	
+		var hasDevName = getHasDevNameOnArray();
+	}
 	if (tab == "import"){
 		globalDevListTab ='import';
 		var query = "{'QUERY':[{'user':'"+globalUserName+"','domainname':'"+window['variable' + dynamicDomain[pageCanvas] ]+"','zone':'','imported':'1','hostname':'"+hasDevName+"'}]}";
@@ -1260,9 +1258,16 @@ function appendToDeviceListTable(data,condition,load, tabSelected){
 
 	if(globalDevListRow.length ==0){
 		globalDevListRow.push({data:data,condition:condition,load:load, tabSelected:tabSelected});
+	}else{
+		globalDevListRow[0].data = data;
+		globalDevListRow[0].condition = condition;
+		globalDevListRow[0].load = load;
+		globalDevListRow[0].tabSelected = tabSelected;
 	}
 	if(devListFilterId.length > 0){
 		var panelCtr = (row.length - devListFilterId.length);
+	}else if(getHasDevNameOnArray().length > 0){
+		var panelCtr = (row.length - getHasDevNameOnArray().length);
 	}else{
 		var panelCtr = row.length;
 	}
@@ -1722,8 +1727,15 @@ function appendToDeviceListTable2(data,condition,load, tabSelected)	{
 		}
 		if(globalSelectedDeviceList.length==$('.trManageDevice').length){
 			$('#checkAlllocal').prop('checked',true);
+			if(globalDeviceType == "Mobile"){
+				$('#selectAllBtn').addClass('ui-btn-active ui-checkbox-on');
+			}
 		}else{
 			$('#checkAlllocal').attr('checked',false);
+			if(globalDeviceType == "Mobile"){
+				$('#selectAllBtn').removeClass('ui-btn-active ui-checkbox-on');
+				$('#selectAllBtn').addClass('ui-checkbox-off');
+			}
 		}
 		fullHubDisEna();
 	});
@@ -1733,6 +1745,12 @@ function appendToDeviceListTable2(data,condition,load, tabSelected)	{
 			$(this).trigger('click');
 		}
 	});	
+	if(globalDeviceType == "Mobile"){
+		$("input:checkbox[name='deviceListCheck']").each(function(){
+			$(this).parent().css({'display':'none'});
+		});
+		$($('#manageConfigTablelocal th')[0]).css({'display':'none'});
+	}
 }
 
 /*
@@ -1858,7 +1876,6 @@ function createDevice(src){
 	if(idsArray.length == 0){
 		createConfigName(); 
 	}
-	addEvent2History("Created a device.");
 	var str ='';
 	if(idsArray.indexOf(devPath) == -1){
 		var imageObj = new Image();
@@ -1948,7 +1965,8 @@ function createDevice(src){
             var css = {"position": 'absolute', "left": "50%","width": w+"px","margin-left":dvded};
             $("#dockContainer").css(css);
 			
-		},100);
+		},100);		
+		addEvent2History("Created a device.");
 	}else{
 		deviceCtr++;
 		createConfigName();
@@ -2467,6 +2485,7 @@ function drawImage(flag,newscale){
         var devices = getDevicesNodeJSON();
     }else{
         var devices = devicesArr;
+        window['variable' + dynamicVar[pageCanvas]].add(window['variable' + dynamicLayer[pageCanvas]]);
     }
     if(devices != null && devices != undefined){
         if(devices.length > 0){
@@ -2523,11 +2542,11 @@ function drawImage(flag,newscale){
             	group = drawOneImage(x2,y2,devices[i],group);
                 window['variable' + dynamicLayer[pageCanvas]].add(group);
                 initImages(group);
-            }			
+            }
             initZoom("reload");
-    	}
-		window['variable' + dynamicVar[pageCanvas]].add(window['variable' + dynamicLayer[pageCanvas]]);
-		window['variable' + dynamicLayer[pageCanvas]].batchDraw();
+            window['variable' + dynamicVar[pageCanvas]].add(window['variable' + dynamicLayer[pageCanvas]]);
+			window['variable' + dynamicLayer[pageCanvas]].batchDraw();
+        }
     }else{
         $("#showTooltipInfo").hide();
     }
@@ -3475,6 +3494,11 @@ function checkCommitOptions(){
  *
  */
 function commitOptionsOk(){
+	globalMAINCONFIG[pageCanvas].MAINCONFIG[0].DeviceSanity = "false";
+	globalMAINCONFIG[pageCanvas].MAINCONFIG[0].AccessSanity = "false";
+	globalMAINCONFIG[pageCanvas].MAINCONFIG[0].LinkSanityEnable = "false";
+	globalMAINCONFIG[pageCanvas].MAINCONFIG[0].EnableInterface = "false";
+	globalMAINCONFIG[pageCanvas].MAINCONFIG[0].Connectivity = "false";
 	var devSan = $("#comOpDevSanity").is(":checked");
 	var accSan = $("#comOpAccSanity").is(":checked");
 	var connec = $("#comOpConnectivity").is(":checked");
@@ -3500,9 +3524,6 @@ function commitOptionsOk(){
 	if($("#comOpConnectivity").parent().parent().parent().attr('style') == "display: none;"){
 		globalMAINCONFIG[pageCanvas].MAINCONFIG[0].Connectivity = "false";
 	}
-//	if($("#comOpStartRes").is(":visible")){
-//		StartReservation = startR;
-//	}
 	if(lnkSan == "true" || lnkSan == true){
 		lnkSan = "yes";
 	}else{
@@ -3520,10 +3541,6 @@ function commitOptionsOk(){
 		window['variable' + dynamicLineConnected[pageCanvas]][b].ConnectivityFlag = lnkSan;
 	}
 	window['variable' + ConnectivityFlag[pageCanvas]] = lnkSan;
-//	enablePort = enaInt;
-//	if(ConnectivityFlag == "yes"){
-//		enablePort = true;
-//	}
 	setTimeout(function(){
     	if(TimePicker == false){
         	$("#RequestButton").trigger("click");
@@ -3545,16 +3562,30 @@ function commitOptionsOk(){
  *
  */
 function resetCommitOptions(){
-	$("#comOpDevSanity").prop('checked',true);
-	$("#comOpAccSanity").prop('checked',true);
-	$("#comOpConnectivity").prop('checked',true);
-	$("#comOpConnectivity").parent().parent().parent().css({'display':'none'});
-	$("#comOpEnaInterface").prop('checked',false);
-	$("#comOpEnaInterface").parent().parent().parent().css({'display':'none'});
-	$("#comOpLinkSanity").prop('checked',false);
-	$("#comOpLinkSanity").parent().parent().parent().css({'display':'none'});
-	$("#comOpStartRes").prop('checked',false);
-	$("#comOpEndRes").prop('checked',false);
+	if(globalDeviceType != "Mobile"){
+		$("#comOpDevSanity").prop('checked',true);
+		$("#comOpAccSanity").prop('checked',true);
+		$("#comOpConnectivity").prop('checked',true);
+		$("#comOpConnectivity").parent().parent().parent().css({'display':'none'});
+		$("#comOpEnaInterface").prop('checked',false);
+		$("#comOpEnaInterface").parent().parent().parent().css({'display':'none'});
+		$("#comOpLinkSanity").prop('checked',false);
+		$("#comOpLinkSanity").parent().parent().parent().css({'display':'none'});
+		$("#comOpStartRes").prop('checked',false);
+		$("#comOpEndRes").prop('checked',false);
+	}else{
+		$("#comOpDevSanity").prop('checked',true).checkboxradio( "refresh" );
+		$("#comOpAccSanity").prop('checked',true).checkboxradio( "refresh" );
+		$("#comOpConnectivity").prop('checked',true).checkboxradio( "refresh" );
+		$("#comOpConnectivity").parent().parent().parent().parent().css({'display':'none'});
+		$("#comOpEnaInterface").prop('checked',false).checkboxradio( "refresh" );
+		$("#comOpEnaInterface").parent().parent().parent().parent().css({'display':'none'});
+	    $("#comOpLinkSanity").prop('checked',false).checkboxradio( "refresh" );
+    	$("#comOpLinkSanity").parent().parent().parent().parent().css({'display':'none'});
+	    $("#comOpStartRes").prop('checked',false).checkboxradio( "refresh" );
+    	$("#comOpEndRes").prop('checked',false).checkboxradio( "refresh" );
+	}
+
 	globalMAINCONFIG[pageCanvas].MAINCONFIG[0].DeviceSanity = "true";
 	globalMAINCONFIG[pageCanvas].MAINCONFIG[0].AccessSanity = "true";
 	globalMAINCONFIG[pageCanvas].MAINCONFIG[0].Connectivity = "false";
@@ -3891,20 +3922,15 @@ function getStatusAutoD(){
 		showAutoSavePage();
 		autoDcomplete = false;	
 	}else{
-		alertUser("Discovery is still ongoing.");
-		return;
-/*	DO NOT DELETE
 		initAutoD = "";
-
-----------
-/*		if(AutoDType!="admin"){
+/*	do not delete
+ *		if(AutoDType!="admin"){
 			$('#newdevicePopUp').dialog('destroy');
 		}
-----------
+*/
 		$('#autoDLogsDialog').dialog('destroy');
 		autoDcomplete = false;
 		clearTimeout(initAutoD);
-*/
 	}
 }
 
@@ -5262,7 +5288,7 @@ function saveTitanToHome(fname,type){
  */
 function downloadFile(confName,cont,ext){
 	if(ext == "xml"){
-		var content = getXmlData();
+		var content = getXmlData(confName);
 	}else if(ext == "topo"){
 		var content = topoMapVar;
 	}else if(ext == "titan"){
@@ -5271,7 +5297,6 @@ function downloadFile(confName,cont,ext){
 		var content = cont;
 	}
 	window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, gotFS, fail);
-
 	function gotFS(fileSystem) {
 		fileSystem.root.getFile(confName+"."+ext, {create: true, exclusive: false}, gotFileEntry, fail);
 	}
@@ -6965,7 +6990,11 @@ function domainEnaDis(src){
 function userInformation2(){
 	getDomainInfo();
 	var InfoType = "JSON";
+	if(globalUserName.length > 9){
+		globalUserName = globalUserName.substring(0,5)+'...';
+	}
 	$('#spanUserLabel').empty().append(globalUserName);
+	$('#spanUserLabel').attr('title',globalUserName);
 	if(InfoType == "XML"){
 		var urls = getURL("RM")+"action=getuser2mobile&query="+globalUserName;	
 	}else{
@@ -7190,6 +7219,7 @@ function checkLinkNameExist(name,myArray){
  *
  */
 var domainFlag = false;
+var instantiateCtr=0;
 function loadGridMenuContent(){
 	if(globalDeviceType == "Mobile"){
 		loading("show");
@@ -7206,7 +7236,6 @@ function loadGridMenuContent(){
 		},
 		method: 'POST',
 		proccessData: false,
-//        async:false,
 		dataType: 'html',
 		success: function(data) {
 			if(globalDeviceType == "Mobile"){
@@ -7233,10 +7262,21 @@ function loadGridMenuContent(){
 			var connectivityFlag = false;
 
 			var dat = data.replace(/'/g,'"');
-		        var dat2 = $.parseJSON(dat);
+	        var dat2 = $.parseJSON(dat);
 			var root = dat2.root;
 			var info = dat2.root[0].info;
 			var conn;
+			if(info.length ==0 && instantiateCtr <= 5){
+				instantiateCtr++;
+				setTimeout(function(){
+		            loadGridMenuContent();
+				},3000);
+				return;
+			}else if(info.length ==0 && instantiateCtr  >5){
+				alertUser("No available devices to fetch");
+			}else{
+				instantiateCtr =0;
+			}
 			if(dat2.root[1] != null && dat2.root[1] != undefined){
 				conn = dat2.root[1].conn;
 				if(conn != null && conn != undefined){
@@ -7264,9 +7304,9 @@ function loadGridMenuContent(){
 				showSideBarMenu(testtoolFlag,deviceFlag,serverFlag,connectivityFlag);
 			}
 			for (var x = 0; x < info.length; x++){
-    	        		var model = info[x].Model;
-                		var hostname = info[x].HostName;
-               			var manu = info[x].Manufacturer;
+	      		var model = info[x].Model;
+            		var hostname = info[x].HostName;
+          			var manu = info[x].Manufacturer;
                 		var type = info[x].DeviceType;
                 		var OStype = info[x].OSType;
                 		var ProductFamily = info[x].ProductFamily;
@@ -7402,7 +7442,16 @@ function loadGridMenuContent(){
 				toggleSideMenu();
 				CommitAction();
 			}
-		}
+		},
+        error: function () {
+			if(instantiateCtr <= 5){
+				setTimeout(function(){	
+		            loadGridMenuContent();
+				},3000);
+			}else{
+				alertUser("No available devices to fecth.");
+			}
+        }
 	});
 }
 
@@ -8492,13 +8541,9 @@ function createQueryMapLink(deviceArrDev){
 			}
 			globalSelectedDeviceList=[];
 			var mydata = data;
-			if(globalInfoType == "XML"){
-				getDataForDeviceList(mydata);
-			}else{
-				data = data.replace(/'/g,'"');
-				var obj = jQuery.parseJSON(data);
-				getDataForDeviceListJSON(obj);
-			}
+			data = data.replace(/'/g,'"');
+			var obj = jQuery.parseJSON(data);
+			getDataForDeviceListJSON(obj);
 			frmMapLink = true;
 			setTimeout(function(){
 				if (globalManageDeviceShow.toLowerCase()=="tooltipdevice"){
@@ -11668,8 +11713,6 @@ function commitOptPopUp(page){
 			$('#commitPop').show();	
 			$('#commitOptions').hide();
 			populateCombo();
-	//		clickPicker();
-//			commitOptionsOk();
 			populateCombo();
 			outOfFocus();
 			initDate();
@@ -12736,10 +12779,18 @@ function cancelHardware(){
 function cancelstartEndReserve(flag,mainMenuFlag){
 	if(flag=="start"){
 		StartReservation="false";
-		$("#comOpStartRes").prop('checked', false);
+		if(globalDeviceType != "Mobile"){
+			$("#comOpStartRes").prop('checked', false);
+		}else{
+			$("#comOpStartRes").prop('checked', false).checkboxradio( "refresh" );
+		}
 	}else{
 		EndReservation="false";
-		$("#comOpEndRes").prop('checked', false);
+		if(globalDeviceType != "Mobile"){
+			$("#comOpEndRes").prop('checked', false);
+		}else{
+			$("#comOpEndRes").prop('checked', false).checkboxradio( "refresh" );
+        }
 	}
 	if(globalDeviceType == "Mobile"){
 		if(flag=="start" && mainMenuFlag==undefined){
@@ -13053,9 +13104,9 @@ function enableDisable(val, type){
 function downloadFileWeb(ext){
 	var text = getStringJSON(globalMAINCONFIG[pageCanvas]);
 	var filename = document.getElementById("saveConfFileName").value;
+	var splitfile=filename.split(".");
 	var blob = new Blob([text], {type: "text/plain;charset=utf-8"});
 
-	var splitfile=filename.split(".");
 	if(splitfile.length==1){
 		if(ext=="titan"){
 			saveAs(blob, filename+".titan");
@@ -13064,6 +13115,9 @@ function downloadFileWeb(ext){
 			saveAs(blob, filename+".topo");
 		}
 		else{
+			var name = filename+".xml";
+			text = getXmlData(name);
+			blob = new Blob([text], {type: "text/plain;charset=utf-8"});
 			saveAs(blob, filename+".xml");
 		}
 	}else{
@@ -13074,6 +13128,8 @@ function downloadFileWeb(ext){
 			saveAs(blob, filename);
 		}
 		else{
+			text = getXmlData(filename);
+			blob = new Blob([text], {type: "text/plain;charset=utf-8"});
 			saveAs(blob, filename);
 		}
 	}
@@ -13181,7 +13237,6 @@ function emailOption(){
 			getOnlineUsers();	
 			$("#user").multiselect();
 //			$("#groups").multiselect();
-			
 			$("#deviceLogs").multiselect();
 
 		});
@@ -13348,6 +13403,38 @@ function hideChat(){
 			
 		});
 }
+/*
+ *FUNCTION NAME :
+ *AUTHOR        :Mary Grace P. Delos Reyes
+ *DATE          :March 19, 2014
+ *MODIFIED BY   :
+ *REVISON  DATE :
+ *REVISON #     :
+ *DESCRIPTION   :
+ *PARAMETERS    :
+*/
+
+function sessionLogs(device){
+	var str ="";
+	for(var i=0;i<device.length;i++ ){
+		var sessionid = device[i].SessionId;
+		var devicesid=  device[i].DeviceId;
+		var type = device[i].Type;
+		var id = deviceid+ "_"+ sessionid + "__"+ type;
+	//	var deviceName = device[i].DeviceName;
+		if (i==0){
+		selectedSessionLogs = id;
+		 str+="<option id='open_"+id+"' onclick='showSelectedLogs(this.id)'>"+device[i].DeviceName+"</option>";
+		}else{
+		 str+="<option id='open_"+id+"' onclick='showSelectedLogs(this.id)'>"+device[i].DeviceName+"</option>";
+		}
+		sessionLogsArray.push(id);
+	}
+		showSelectedLogs(selectedSessionLogs);
+		 $("#deviceLogs").multiselect(str);	
+}
+
+
 
 /*
  *FUNCTION NAME :deviceQstr()
@@ -13371,6 +13458,7 @@ function deviceQstr(device){
 	devicesStr += "]";
 	return devicesStr;		  
 }
+
 
 /*######################################################################
  *
@@ -14428,23 +14516,26 @@ function cyclePower(){
  */
 
 function selectAll(flag){
-	var ctr=0;
-	$('input:checkbox[name="'+flag+'"]').each(function(){
-		if($(".checkAll").is(":checked")){
-			$(this).trigger('click');
-//			$(this).prop('checked', true);
-			$(this).parent().parent().addClass("highlight");
-//			$(this).parent().parent().removeClass("alt");
-		}else{
-			//$(this).prop('checked', false);	
-			$(this).trigger('click');
-//			if(ctr % 2 == 0){
-//				$(this).parent().parent().addClass("alt");
-//			}
-			$(this).parent().parent().removeClass("highlight");
+	if($(".checkAll").is(":checked")){
+		if(globalDeviceType == "Mobile"){
+			$('#selectAllBtn').addClass('ui-btn-active ui-checkbox-on');
 		}
-		ctr++;
-	});
+		$(".trManageDevice").each(function(){
+			if(!$(this).hasClass('highlight')){
+				$(this).trigger('click');
+			}
+		});
+	}else{
+		if(globalDeviceType == "Mobile"){
+			$('#selectAllBtn').removeClass('ui-btn-active ui-checkbox-on');
+			$('#selectAllBtn').addClass('ui-checkbox-off');
+		}
+		$(".trManageDevice").each(function(){
+			if($(this).hasClass('highlight')){
+				$(this).trigger('click');
+			}
+		});
+	}
 }
 
 /*
@@ -16366,6 +16457,7 @@ function deviceSession(e,val){
 				if(data != ""){
 					data = data.split("::").join("\n");
 					$("#consoledevice").val(data);
+					$("#consoledevice").scrollTop($('#consoledevice')[0].scrollHeight);
 				}
 				getActiveUser();
 				clearInterval(setInt);
@@ -16513,6 +16605,7 @@ if (e.charCode == 13 || e=='send') {
 					str += "<div style ='text-align:right; border-bottom:1px solid #bdbdbd;'> "+ message +" <div style ='text-align:left;width:10px;'> "+ time +" </div></div>";
 				}
 		//	}
+				$("#chatMsg").scrollTop($('#chatMsg')[0].scrollHeight);
 				$("#chatMsg").append(str);
 				loadChatSession();
 			}
@@ -16821,13 +16914,19 @@ function autoCreateLine(){
 			}
 		}
 	}else if(type == "fullmesh"){
+		var index = 0;
 		var checkArr = [];
+		var checkArr2 = [];
+		var x=0
 		for(var i = 0 ; i < dev.length; i++){
-			for(var x = 0 ; x < dev.length; x++){
-				
-				if(dev[i].HostName != dev[x].HostName){
-				
+			loop:
+			for(x = 0 ; x < dev.length; x++){
+				if(i == x){
+					continue loop;
+				}	
+				if(dev[i].HostName != dev[x].HostName && checkArr[x] != dev[i].HostName){
 					var lineInfo = checkSamePort(dev[i],dev[x]);
+					checkArr.push(dev[x].HostName);
 					console.log('>>>>>>>>>>',lineInfo);
 					var name = lineInfo[0]+"_"+i;
 					if(lineInfo.length > 0){
@@ -16865,7 +16964,7 @@ function checkSamePort(devices,devices2){
             var srcSpeed = prtArr[a].Speed;
             var srcPath = prtArr[a].ObjectPath;
             var srcSwitch = prtArr[a].SwitchInfo.split('^')[0];
-     //       prtArr[a].PortFlag = true;
+            prtArr[a].PortFlag = "true";
             var ind = a;
 
             break;
@@ -16883,7 +16982,7 @@ function checkSamePort(devices,devices2){
         if(srcType == "L1" && destSpeed == srcSpeed && destType == srcType && destSwitch == srcSwitch){
             var name= 't'+srcSpeed.substring(0,srcSpeed.length - 3)+'gb';
             portTempArr[q].PortFlag = "true";
-            prtArr[a].PortFlag = "true";
+//            prtArr[a].PortFlag = "true";
             dataArr.push(name,srcPath,destPath);
             q = portTempArr.length;
             a = prtArr.length;
@@ -16891,7 +16990,7 @@ function checkSamePort(devices,devices2){
         }else if(destType == "L2" && destType == srcType && destFlag == "" && srcFlag == "" && destSwitch == srcSwitch){
             var name= 't'+srcSpeed.substring(0,srcSpeed.length - 3)+'gb';
             portTempArr[q].PortFlag = "true";
-            prtArr[a].PortFlag = "true";
+  //          prtArr[a].PortFlag = "true";
             dataArr.push(name,srcPath,destPath);
             q = portTempArr.length;
             break;
@@ -21691,14 +21790,8 @@ function enableRow1SubProc(cbAllKey,setValKey,checkCtr,checkBoxCtr){
 /*-------kmmabignay - mar14 - saveEndReservation query-------*/
 function saveEndResQuery(opt){
 	var query = "";
-	if(globalInfoType == "XML"){
-		var urlx = "/cgi-bin/Final/AutoCompleteCgiQuerry_withDb/";
-		urlx += "SaveLoadConfigurationImage.cgi";
-		queryx = getXmlData();
-	}else{
-		var urlx = getURL("ConfigEditor","JSON");
-		queryx = getStringJSON(globalMAINCONFIG[pageCanvas]);
-	}
+	var urlx = getURL("ConfigEditor","JSON");
+	queryx = getStringJSON(globalMAINCONFIG[pageCanvas]);
 	if(opt=="Save"){
 		var actionx = "saveconfigmenu";
 	}else{
@@ -24479,7 +24572,7 @@ function devSanityFail(yesno){
 		var devFlag = false;
 		devSanXML2(devFlag);
 	}else if(yesno == "no"){
-		if(devSanF.toString == "true"){
+		if(devSanF.toString()  == "true"){
 			sendUpdateContFlag('stop');
 			closePopUp('sanity');
 			cancelReservation();
@@ -25365,7 +25458,6 @@ function showConsolePopUp(device,devicesArr){
 			});
 			createDynamicTabForConsole(validDevices);
 			 $("#deviceLogs").multiselect();
-
 		});
 	} 
 }
@@ -25993,42 +26085,3 @@ function highlightTr(tr,flag){
 		}
 	}
 }
-/*
- * 
- *  FUNCTION NAME : confirmationloadactive
- *  AUTHOR        : Juvindle C Tina
- *  DATE          : April 1, 2014
- *  MODIFIED BY   :
- *  REVISION DATE :
- *  REVISION #    :
- *  DESCRIPTION   : load active confirmation
- *  PARAMETERS    : msg,header,todo
- * 
- */
-function confirmationloadactive(msg,header,todo) {
-	$(".ui-popup").popup("close");
-	setTimeout(function(){
-		if(globalMAINCONFIG[pageCanvas].MAINCONFIG[0].ResourceId != null && globalMAINCONFIG[pageCanvas].MAINCONFIG[0].ResourceId != "" && globalMAINCONFIG[pageCanvas].MAINCONFIG[0].ResourceId != undefined){
-			$("#cancelResCheckboxloadactive").show();
-		}else{
-			$("#cancelResCheckboxloadactive").hide();
-		}
-		$('#confirmationHeaderloadactive').empty().append(header);
-		$('#confirmationBodyloadactive').empty().append(msg);
-		$('#confirmationloadactive').popup( {create: function(){ }});	
-		setTimeout(function(){
-	   	    $('#confirmationloadactive').show().popup("open");	
-			$(document).on('click','#confirmYesload', function(){
-				$('#confirmationloadactive').popup('close').hide();
-				if($("#clearCanvasCancelPromptloadactive").is(":checked") == true){
-					ReleaseFlagLoadActive = true;
-				}
-				eval(todo);
-			});
-			$(document).on('click','#confirmNoload', function(){
-				$('#confirmationloadactive').popup("close").hide();
-			});
-		},200);
-	},200);
-}
-

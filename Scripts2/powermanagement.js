@@ -304,7 +304,7 @@ function PMAttribJSON(jsonData,tb){
 
 			//JSON 	
 	 		if(globalDeviceType != "Mobile"){
-				str += "<tr id='tr"+jsonData.data[0].row[a].DeviceId+"'><td><input type='checkbox' class='trPDU' pduid='"+jsonData.data[0].row[a].DeviceId+"' did='"+jsonData.data[0].row[a].IpAddress+"'/></td>";
+				str += "<tr id='tr"+jsonData.data[0].row[a].DeviceId+"'><td><input type='checkbox' class='trPDU' pduid='"+jsonData.data[0].row[a].DeviceId+"' did='"+jsonData.data[0].row[a].IpAddress+"' name='trPDU' onclick='PowerCheckSingle();'/></td>";
 			}else{
 				str += "<tr class='trPDU' pduid='"+row[a].DeviceId+"'>";
 			}
@@ -2330,7 +2330,9 @@ function clickAllCBoxPM(cbAllId,name){
 			$(this).attr('checked',false);
 		}
 	});
-	powerCheckbox(name);
+	if (name == 'tbOutlet'){
+		powerCheckbox(name);
+	}
 }
 /*------------------------------------------------------ */
 
@@ -3233,8 +3235,73 @@ function EditInletJSON(SType){
 			var InletIP = selectedInlet.IP;
 			var InletInlet = selectedInlet.Inlet;
 //		}
-	console.log("powerdata: "+powerdata);
 	return powerdata;
+}
+
+/*
+ *
+ **
+ **  FUNCTION NAME : PowerManagementBtn
+ **  AUTHOR        : Maureen Daelo
+ **  DATE          : March 29, 2014
+ **  MODIFIED BY   :
+ **  REVISION DATE :
+ **  REVISION #    :
+ **  DESCRIPTION   : create tree view for power management page
+ **  PARAMETERS    : data
+ **
+ **/
+
+function PowerManagementBtn(){
+	if (globalSelectedPowerMain.length == 0 || globalSelectedPowerMain.length > 1){	
+		$('#PDUedit').addClass('ui-state-disabled');
+		$('#PDUedit').attr('disabled', false);	
+		$('#PDUdelete').addClass('ui-state-disabled');
+		$('#PDUdelete').attr('disabled', false);	
+	}
+}
+
+function PowerCheckSingle(){
+	var ctr = 0;
+	if(pmpage == "PDU"){
+		globalSelectedPowerMain = [];
+		$('input:checkbox[name="trPDU"]').each(function(){
+			if($(this).is(':checked')){
+				$(this).parent().parent().addClass('highlight');
+				globalSelectedPowerMain.push($(this).attr('pduid'));
+				ctr++;
+			}else{
+				$(this).parent().parent().removeClass('highlight');
+				$('#cbAllPDU').attr('checked', false);
+				ctr--;
+			}
+		});
+		if (globalSelectedPowerMain.length == 1){
+			$('#PDUedit').addClass('ui-state-enabled');
+			$('#PDUedit').removeClass('ui-state-disabled');
+			$('#PDUedit').attr('disabled', false);	
+		}else{
+			$('#PDUedit').addClass('ui-state-disabled');
+			$('#PDUedit').removeClass('ui-state-enabled');
+			$('#PDUedit').attr('disabled',true);	
+		}
+		if (globalSelectedPowerMain.length != 0){
+			$('#PDUdelete').removeClass('ui-state-disabled');
+			$('#PDUdelete').addClass('ui-state-enabled');
+			$('#PDUdelete').attr('disabled', false);	
+		}else{
+			$('#PDUdelete').addClass('ui-state-disabled');
+			$('#PDUdelete').removeClass('ui-state-enabled');
+			$('#PDUdelete').attr('disabled',true);	
+		}
+
+		
+		if (ctr == globalSelectedPowerMain.length){
+			$('#cbAllPDU').prop('checked', true);
+		}
+
+	}
+
 }
 
 /*

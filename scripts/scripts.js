@@ -808,7 +808,9 @@ $(document).on('click',"#connectivityAny", function() {
 $(document).on('click', "#dlistDone", function(){
 	dragtoTrashDeviceOnly(glblDevMenImg,gblDevMenX,gblDevMenY,"true");
 	setTimeout(function(){
-		createQueryMapLink(globalSelectedDeviceList,globalDeviceListLoad);
+		if(globalSelectedDeviceList.length>0){
+			createQueryMapLink(globalSelectedDeviceList,globalDeviceListLoad);
+		}
    		$.mobile.changePage($('#configEditorPage'),{
    			transition: "pop"
    		});
@@ -817,9 +819,9 @@ $(document).on('click', "#dlistDone", function(){
 });
 $(document).on('click', "#dlistApply", function(){
 	dragtoTrashDeviceOnly(glblDevMenImg,gblDevMenX,gblDevMenY,"true");
-//	creatQueryMapLink(globalSelectedDeviceList,globalDeviceListLoad);
+	createQueryMapLink(globalSelectedDeviceList,globalDeviceListLoad);
 	setTimeout(function(){
-		deviceListPopupTable(globalDeviceListLoad,globalDevListTab);
+		deviceListPopupTable(globalDeviceListLoad,globalDevListTab,true);
 		configEditorManageDevice = false; // to stop objpath 
 	},1500);
 });
@@ -1673,7 +1675,7 @@ $(document).on('click', '#saveConfname', function() {
 	error("Configuration Name saved.","Notification");
 });
 
-$(document).on('click', '#comOpStartRes', function() {
+$(document).on('change', '#comOpStartRes', function() {
 	if(!$("#comOpStartRes").is(":checked")){return;}
 	toolsConfPages("toolsStartRes");
 	$("#customPage").on("pageshow",function(){
@@ -1682,7 +1684,7 @@ $(document).on('click', '#comOpStartRes', function() {
 	});
 });
 
-$(document).on('click', '#comOpEndRes', function() {
+$(document).on('change', '#comOpEndRes', function() {
 	if(!$("#comOpEndRes").is(":checked")){return;}
 	toolsConfPages("toolsEndRes");
 	$("#customPage").on("pageshow",function(){

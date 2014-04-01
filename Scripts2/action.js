@@ -374,11 +374,9 @@ function loadActiveTableQuery(ths){
 	}
 
 	if(globalDeviceType == "Mobile"){
-		setTimeout(function(){
-	        $.mobile.changePage($('#loadActivePop'),{
-	            transition: "pop"
-		    });
-	    },1500);
+        $.mobile.changePage($('#loadActivePop'),{
+            transition: "pop"
+	    });
 		loading('show');
 	}else{
 		$("#ActiveTable > tbody").empty().append(loader);
@@ -498,12 +496,12 @@ function loadActiveTableQuery(ths){
 					$("#LoadActiveTable > tbody").empty().append(html);
 				}else{
 					$("#ActiveTable > tbody").empty().append(html);
+					$(".ui-dialog").position({
+		    	    	my: "center",
+			        	at: "center",
+				        of: window
+			   		});
 				}
-				$(".ui-dialog").position({
-	    	    	my: "center",
-		        	at: "center",
-			        of: window
-			   	});
 				 $('#loadActivePop').trigger('create');
                 if(globalDeviceType != "Mobile"){
 					$(".trSelected").trigger('click');
@@ -1245,7 +1243,7 @@ function checkProcessExecuted(data,flag){
 			window['variable' + dynamicOtherUser[pageCanvas]]="";;
 			drawImage();
 			error("Process Completed","Notification");
-		}else if(resultData == "0" || result == ""){
+		}else if(resultData == "0" || resultData == ""){
 			error("Cancel Failed.","Notification");
 		}else if(resultData == "-1"){
 			error("DPS is down.","Notification");

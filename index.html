@@ -41,8 +41,8 @@
     <script src="scripts/statistics.js"></script>
     <script src="Scripts2/stats.js"></script>
     <script src="scripts/dock.js"></script>
-<!--    <script src="scripts/kinetic-v4.7.4.min.js"></script>	-->
-	<script src="Scripts2/kinetic-v5.1.0.min.js"></script>
+    <script src="scripts/kinetic-v4.7.4.min.js"></script>
+<!--	<script src="../Scripts/kinetic-v5.1.0.min.js"></script>-->
     <script src="Scripts2/ResourceManagement.js"></script>
     <script src="scripts/base64.js"></script>
     <script src="scripts/canvas2image.js"></script>
@@ -59,6 +59,7 @@
 	<script>
 		var globalDeviceType = "Mobile";
 		browserInfo();
+        developerMode=true;
 	</script>
 	<div class="cRight" style="position: fixed; bottom: 0px; z-index: 9999999;color: #1c58ad;  text-align: center;  width: 100%;  font-family: 'Arial',helvetica,san-serif;  font-weight: normal;  font-size: 11px; margin-bottom: -3px;">
 		<table style="margin-left: auto;margin-right: auto;margin: 0 auto;">
@@ -628,6 +629,9 @@
 				</div>
 				<table style="text-align:center;width:100%;">
 					<tr>
+						<td>
+							<button type="button" class="ui-btn ui-mini ui-btn-inline" data-mini="true" onclick="$('.checkAll').trigger('click')" id="selectAllBtn">SelectAll</button>
+						</td>
 						<td>
                             <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true" id="devlistview" >
                                 <input type="radio" name="radiodevlistype" value="graphical" id="graphical" >
@@ -1399,7 +1403,7 @@
 </div>
 
 <!-- End for popup of device sanity, access sanity, connectivity, link sanity and enable interface -->
-<div data-role="page" id="commitOptions" data-theme="a" style="width:30%; margin-left:auto; margin-right:auto;" data-close-btn="none">
+<div data-role="page" id="commitOptions" data-theme="a" style="width:50%; margin-left:auto; margin-right:auto;" data-close-btn="none">
         <div data-role="header" data-theme="d">
             <h2>Commit Options</h2>
         </div>
@@ -1407,32 +1411,79 @@
 			Topology Configuration to be executed.
             <table style="width:100%;">
                 <tr id="comOpDevSanityTr" style="display:none;">
-					<td style="width:15%;"><input style="height: 30px;margin: -15px 0 0 0;" type="checkbox" data-mini="true" checked="checked" id="comOpDevSanity"></td>
-					<td style="text-align:left;">Device Sanity</td>
+					<td>
+						<input type="checkbox" checked="checked" id="comOpDevSanity" data-mini="true">
+					    <label for="comOpDevSanity">Device Sanity</label>
+					</td>
+					<td></td>
+<!--					<td style="width:15%;"><input style="height: 30px;margin: -15px 0 0 0;" type="checkbox" data-mini="true" checked="checked" id="comOpDevSanity"></td>
+					<td style="text-align:left;">Device Sanity</td>-->
 				</tr>
 				<tr id="comOpAccSanityTr" style="display:none;">
-					<td style="width:15%;"><input style="height: 30px;margin: -15px 0 0 0;" type="checkbox" data-mini="true" checked="checked" id="comOpAccSanity"></td>
-                    <td style="text-align:left;">Access Sanity</td>
+					<td>
+						<div class="ui-checkbox ui-mini">
+							<label for="comOpAccSanity" class="ui-btn ui-corner-all ui-checkbox-on ui-btn-inherit ui-btn-icon-left">Access Sanity</label>
+							<input type="checkbox" checked="checked" id="comOpAccSanity" data-mini="true">
+						</div>
+                    </td>
+                    <td></td>
+<!--					<td style="width:15%;"><input style="height: 30px;margin: -15px 0 0 0;" type="checkbox" data-mini="true" checked="checked" id="comOpAccSanity"></td>
+                    <td style="text-align:left;">Access Sanity</td>-->
                 </tr>
 				<tr id="comOpConnectivityTr" style="display:none;">
-					<td style="width:15%;"><input style="height: 30px;margin: -15px 0 0 0;" type="checkbox" data-mini="true" checked="checked" id="comOpConnectivity"></td>
-                    <td style="text-align:left;">Connectivity</td>
+					<td>
+						<div class="ui-checkbox ui-mini">
+                            <label for="comOpConnectivity" class="ui-btn ui-corner-all ui-checkbox-on ui-btn-inherit ui-btn-icon-left">Connectivity</label>
+                            <input type="checkbox" checked="checked" id="comOpConnectivity" data-mini="true">
+                        </div>
+                    </td>
+                    <td></td>
+<!--					<td style="width:15%;"><input style="height: 30px;margin: -15px 0 0 0;" type="checkbox" data-mini="true" checked="checked" id="comOpConnectivity"></td>
+                    <td style="text-align:left;">Connectivity</td>-->
                 </tr>
                 <tr id="comOpEnaInterfaceTr" style="display:none;">
-					<td style="width:15%;"><input style="height: 30px;margin: -15px 0 0 0;" type="checkbox" data-mini="true" id="comOpEnaInterface"></td>
-                    <td style="text-align:left;">Enable Interface</td>
+					<td>
+						<div class="ui-checkbox ui-mini">
+                            <label for="comOpEnaInterface" class="ui-btn ui-corner-all ui-checkbox-on ui-btn-inherit ui-btn-icon-left">Enable Interface</label>
+                            <input type="checkbox" id="comOpEnaInterface" data-mini="true">
+                        </div>
+                    </td>
+                    <td></td>
+<!--					<td style="width:15%;"><input style="height: 30px;margin: -15px 0 0 0;" type="checkbox" data-mini="true" id="comOpEnaInterface"></td>
+                    <td style="text-align:left;">Enable Interface</td>-->
                 </tr>
 				<tr id="comOpLinkSanityTr" style="display:none;">
-					<td style="width:15%;"><input style="height: 30px;margin: -15px 0 0 0;" type="checkbox" data-mini="true" id="comOpLinkSanity"></td>
-                    <td style="text-align:left;">Link Sanity</td>
+<!--					<td style="width:15%;"><input style="height: 30px;margin: -15px 0 0 0;" type="checkbox" data-mini="true" id="comOpLinkSanity"></td>
+                    <td style="text-align:left;">Link Sanity</td>-->
+					<td>
+                        <div class="ui-checkbox ui-mini">
+                            <label for="comOpLinkSanity" class="ui-btn ui-corner-all ui-checkbox-on ui-btn-inherit ui-btn-icon-left">Link Sanity</label>
+                            <input type="checkbox" id="comOpLinkSanity" data-mini="true">
+                        </div>
+                    </td>
+                    <td></td>
                 </tr>
                 <tr id="comOpStartResTr" style="display:none;">
-					<td style="width:15%;"><input style="height: 30px;margin: -15px 0 0 0;" type="checkbox" data-mini="true" id="comOpStartRes"></td>
-                    <td style="text-align:left;">Start of Reservation Option</td>
+<!--					<td style="width:15%;"><input style="height: 30px;margin: -15px 0 0 0;" type="checkbox" data-mini="true" id="comOpStartRes"></td>
+                    <td style="text-align:left;">Start of Reservation Option</td>-->
+					<td>
+                        <div class="ui-checkbox ui-mini">
+                            <label for="comOpStartRes" class="ui-btn ui-corner-all ui-checkbox-on ui-btn-inherit ui-btn-icon-left">Start of Reservation Option</label>
+                            <input type="checkbox" id="comOpStartRes" data-mini="true">
+                        </div>
+                    </td>
+                    <td></td>
                 </tr>
                 <tr id="comOpEndResTr" style="display:none;">
-					<td style="width:15%;"><input style="height: 30px;margin: -15px 0 0 0;" type="checkbox" data-mini="true" id="comOpEndRes"></td>
-                    <td style="text-align:left;">End of Reservation Option</td>
+<!--					<td style="width:15%;"><input style="height: 30px;margin: -15px 0 0 0;" type="checkbox" data-mini="true" id="comOpEndRes"></td>		
+                    <td style="text-align:left;">End of Reservation Option</td>-->
+					<td>
+                        <div class="ui-checkbox ui-mini">
+                            <label for="comOpEndRes" class="ui-btn ui-corner-all ui-checkbox-on ui-btn-inherit ui-btn-icon-left">End of Reservation Option</label>
+                            <input type="checkbox" id="comOpEndRes" data-mini="true">
+                        </div>
+                    </td>
+                    <td></td>
                 </tr>
             </table>
             <a href="#" id="okCommitOptions" data-role="button" data-mini="true" data-inline="true" style="width: 40px;"  style="" >Ok</a>

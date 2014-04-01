@@ -3313,6 +3313,7 @@ function deleteManageDevice(){
 		success:function(data){
 			data = $.trim(data);
 			if(globalInfoType == "JSON"){
+				if(!data){ alertUser("Process failed."); return }
 				var dat = data.replace(/'/g,'"');
 		        var dat2 = $.parseJSON(dat);
 				var RESULT = dat2.RESULT;
@@ -6363,10 +6364,10 @@ function checkSingleRM(table,src){
 			getdevicetype(devid);	
 
 			var trId = $(src).attr('id'); //
-			$('#tr'+trId).find('td').eq(11).find('input').removeAttr('disabled');	
-			$('#tr'+trId).find('td').eq(12).find('input').removeAttr('disabled');	
-			$('#tr'+trId).find('td').eq(16).find('input').removeAttr('disabled');	
-			$('#tr'+trId).find('td').eq(17).find('input').removeAttr('disabled');	
+			dateR1 = $('#tr'+trId).find('td').eq(11).find('input').removeAttr('disabled').val();
+			timeR1 = $('#tr'+trId).find('td').eq(12).find('input').removeAttr('disabled').val();	
+			dateR2 =$('#tr'+trId).find('td').eq(16).find('input').removeAttr('disabled').val();	
+			timeR2 = $('#tr'+trId).find('td').eq(17).find('input').removeAttr('disabled').val();	
 			$('#tr'+trId).find('td').eq(13).find('input').removeAttr('disabled');	
 			$('#tr'+trId).find('td').eq(14).find('input').removeAttr('disabled');	
 		}else{
@@ -6935,7 +6936,7 @@ function loadDevicesHTML5(){
 	var url ="https://"+CURRENT_IP+"/cgi-bin/NFast_3-0/CGI/RESOURCEMANAGEMENT/NFastRMCGI.py?action=ReservationDevice&query={'QUERY':[{'limit':'"+limit+"','page':'"+page+"','sort':'','orderby':'','user':'"+globalUserName+"','filter':'"+globalStrFilter5+"','domain':'"+domain+"','ZoneName':'"+zoneName+"','GroupName':'"+groupName+"'}]}";
 
 	$("#RMDevices-table > tbody").html(loader);
-	var dateToday = date.getMonth()+1+'/'+date.getDate()+'/'+date.getFullYear()
+	var dateToday = month+"/"+day+"/"+date.getFullYear();
 	$.ajax({
         url: url,
 		dataType: 'html',
@@ -6977,8 +6978,8 @@ function loadDevicesHTML5(){
 				html += "<td>"+json.root[0].row[a].DomainName+"</td>";
 				html += "<td>"+json.root[0].row[a].ZoneName+"</td>";
 				html += "<td>"+json.root[0].row[a].GroupName+"</td>";
-				html += "<td><input title='Start date' did='"+json.root[0].row[a].DeviceId+"' onchange='popUpDate(this.value,11);' style='border:none;text-align:center;' type='text' id='StartDate"+a+"' class='datepickerdev' readonly='yes' value='"+dateToday+"'/></td>";
-		        html += "<td><input title='Start time' did='"+json.root[0].row[a].DeviceId+"' onchange='popUpDate(this.value,12);' style='border:none;text-align:center;' type='text' id='StartTime"+a+"' class='timepicker' readonly='yes' value='"+time+"' /></td>";
+				html += "<td><input title='Start date' did='"+json.root[0].row[a].DeviceId+"' onchange='popUpDate(this.value,11,this);' style='border:none;text-align:center;' type='text' id='StartDate"+a+"' class='datepickerdev' readonly='yes' value='"+dateToday+"'/></td>";
+		        html += "<td><input title='Start time' did='"+json.root[0].row[a].DeviceId+"' onchange='popUpDate(this.value,12,this);' style='border:none;text-align:center;' type='text' id='StartTime"+a+"' class='timepicker' readonly='yes' value='"+time+"' /></td>";
 				html += "<td><input title='Interval' style='border:none;text-align:center;' id='intervalRR' class='interval' type='text' onkeyup='setIteration(this.value);' onkeypress='return checkNumberInputChar(event,this);' value='0'/></td>";
 		        html += "<td><input title='Iteration' style='border:none;text-align:center;' id='iterationRR"+a+"' class='iteration' type='text' onkeyup='setIteration(this.value)' onkeypress='return checkNumberInputChar(event,this);' value='1'/></td>";
 
@@ -6992,8 +6993,8 @@ function loadDevicesHTML5(){
 				}
 				html += "</select></td>";
 
-				html += "<td><input style='border:none;text-align:center;' id='EndDate"+a+"' title='End date' type='text' did='"+json.root[0].row[a].DeviceId+"'  readonly='yes' class='datepickerdev' value='"+dateToday+"' onchange='popUpDate(this.value,15)'/></td>";
-		        html += "<td><input did='"+json.root[0].row[a].DeviceId+"' onchange='popUpDate(this.value,16);' title='End time' style='border:none;text-align:center;' id='EndTime"+a+"' type='text' onkeypress='return checkNumberInputChar(event,this);' class='timepicker' value='"+endTime+"'/></td>";
+				html += "<td><input style='border:none;text-align:center;' id='EndDate"+a+"' title='End date' type='text' did='"+json.root[0].row[a].DeviceId+"'  readonly='yes' class='datepickerdev' value='"+dateToday+"' onchange='popUpDate(this.value,16,this)'/></td>";
+		        html += "<td><input did='"+json.root[0].row[a].DeviceId+"' onchange='popUpDate(this.value,17,this);' title='End time' style='border:none;text-align:center;' id='EndTime"+a+"' type='text' onkeypress='return checkNumberInputChar(event,this);' class='timepicker' value='"+endTime+"'/></td>";
 				html +="</tr>";
 				
 			}
@@ -10264,7 +10265,8 @@ function getDevicesDateTime(){
 
 }
 
-function popUpDate(val,index) {
+function popUpDate(val,index,obj) {
+	checkSingleRM('ReservationDevices',obj)
 console.log(index,val,'jdjdjdjdj');
 	var clname = "";
 	var isvalid = validateTimeDateInfo(val,index,dateR1);
@@ -10356,12 +10358,12 @@ console.log(index,val,'jdjdjdjdj');
 						}
 					});
 					switch (index) {
-						case "11": dateR1 = val; autoCalculate("StartDate","0"); break;
-						case "12": timeR1 = val; autoCalculate("StartTime","0"); timeout1 = null; break;
-						case "16": dateR2 = val; autoCalculate("EndDate","0"); break;
-						case "17": timeR2 = val; autoCalculate("EndTime","0"); timeout1 = null; break;
-						case "13": intervalR = val; timeout = null; break;
-						case "14": iterationR = val;  timeout = null;  break;
+						case 11: dateR1 = val; autoCalculate("StartDate","0"); break;
+						case 12: timeR1 = val; autoCalculate("StartTime","0"); timeout1 = null; break;
+						case 16: dateR2 = val; autoCalculate("EndDate","0"); break;
+						case 17: timeR2 = val; autoCalculate("EndTime","0"); timeout1 = null; break;
+						case 13: intervalR = val; timeout = null; break;
+						case 14: iterationR = val;  timeout = null;  break;
 					}
 				},
 				"No": function() {
@@ -10371,12 +10373,12 @@ console.log(index,val,'jdjdjdjdj');
 					$('.checkboxDevices').each(function() {
 						if ($(this).is(':checked')) {
 							switch (index) {
-								case "11": tocompare = dateR1; loc = "StartDate"; break;
-								case "12": tocompare = timeR1; loc = "StartTime"; break;
-								case "13": tocompare = intervalR; break;
-								case "14": tocompare = iterationR; break;
-								case "16": tocompare = dateR2; loc = "EndDate"; break;
-								case "17": tocompare = timeR2; loc = "EndTime"; break;
+								case 11: tocompare = dateR1; loc = "StartDate"; break;
+								case 12: tocompare = timeR1; loc = "StartTime"; break;
+								case 13: tocompare = intervalR; break;
+								case 14: tocompare = iterationR; break;
+								case 16: tocompare = dateR2; loc = "EndDate"; break;
+								case 17: tocompare = timeR2; loc = "EndTime"; break;
 							}
 		   		        	if ($(this).parent().parent().find('td').eq(index).find('input').val() != tocompare) {
 								autoCalculate(loc,$(this).attr('id'));
@@ -10421,23 +10423,25 @@ console.log(index,val,'jdjdjdjdj');
 		$('#Alert').empty().append("<div style='color:#39599C;'>Would you like to apply change of "+change+" to all selected device(s)?</div>").dialog("open");	
 		$('.ui-dialog :button').blur();
 	} else if (cnt == 1) {
+		console.log('index',index);
 		switch (index) {
-			case "11": dateR1 = val; autoCalculate("StartDate","0"); break;
-			case "12": timeR1 = val; autoCalculate("StartTime","0"); timeout1 = null; break;
-			case "16": dateR2 = val; autoCalculate("EndDate","0"); break;
-			case "17": timeR2 = val; autoCalculate("EndTime","0"); timeout1 = null; break;
-			case "13": intervalR = val; timeout = null; break;
-			case "14": iterationR = val;  timeout = null; break;
+			case 11: dateR1 = val; autoCalculate("StartDate","0"); break;
+			case 12: timeR1 = val; autoCalculate("StartTime","0"); timeout1 = null; break;
+			case 16: dateR2 = val; autoCalculate("EndDate","0"); break;
+			case 17: timeR2 = val; autoCalculate("EndTime","0"); timeout1 = null; break;
+			case 13: intervalR = val; timeout = null; break;
+			case 14: iterationR = val;  timeout = null; break;
 		}
 	  }
 }
 function validateTimeDateInfo (val,index,sdate) {
 	console.log(val,index,sdate,'validateee');
 	if (index == "11" || index == "12") {
+		console.log(index,'index11');
 		var isvalid = checkValueFirst(val,index,sdate);
 		if ( isvalid ) {
 			switch (index) {
-				case "11": 
+				case 11: 
 					alerts("Invalid Start Date. Start Date should not be less than the current date."); 
 					$('.checkboxDevices').each(function() {
 						if ($(this).is(':checked')) {
@@ -10447,7 +10451,7 @@ function validateTimeDateInfo (val,index,sdate) {
 						}
 					});
 				break;
-				case "12": 
+				case 12: 
 					alerts("Invalid Start Time. Start Time should not be less than the current time.");
 					$('.checkboxDevices').each(function() {
 						if ($(this).is(':checked')) {
@@ -10462,8 +10466,8 @@ function validateTimeDateInfo (val,index,sdate) {
 		} else {
 			return 1;
 	 	  }
-	} else if (index == "16" || index == "17") {
-		if (index == "16") {
+	} else if (index == 16 || index == 17) {
+		if (index == 16) {
 			if (val < dateR1) {
 				alerts("Invalid End Date. End Date should not be less than the start date."); 
 				$('.checkboxDevices').each(function() {
@@ -10570,17 +10574,17 @@ function checkValueFirst(val, index,sdate) {
 
 	if (globalPageRM == "ReservationDevices") {
 		switch (index) {
-			case "11": case "16":
+			case 11: case 16:
 				if (val < tempdate) {
 					ret = 1;
 			 	}
 			break;
-			case "12":
+			case 12:
 				if (sdate == tempdate && val < temptime) {
 					ret = 1;
 				}
 			break;
-			case "17":
+			case 17:
 				var edate = "";
 				$('.checkboxDevices').each(function() {
 					if ($(this).is(':checked')) {
@@ -10598,17 +10602,17 @@ function checkValueFirst(val, index,sdate) {
 		}
 	} else {
 		switch (index) {
-			case "8": case "17":
+			case 8: case 17:
 				if (val < tempdate) {
 					ret = 1;
 			 	}
 			break;
-			case "9":
+			case 9:
 				if (sdate == tempdate && val < temptime) {
 					ret = 1;
 				}
 			break;
-			case "18":
+			case 18:
 				var edate = "";
 				$('.resres').each(function() {
 					if ($(this).is(':checked')) {
@@ -10630,12 +10634,13 @@ function checkValueFirst(val, index,sdate) {
 	
 }
 function autoCalculate(position,flag) {
-
+	console.log(dateR1,dateR2,'llllkkkjlllkkkjjjjjjjjj');
 	switch (position) {
 		case "StartDate":
 			if (flag == "0") {
+				console.log(dateR1,dateR2,'harhar');
 				if (dateR1 > dateR2) {
-					if (timeR1 > timeR2) {
+					if (timeR1 > timeR2){ 
 						changeEndTime(flag,"");
 					} else {
 						makeEqualDate("dateR1",flag);
@@ -10825,6 +10830,91 @@ function changeStartTime(flag,time) {
 		});
 	} else {
 		$('#'+flag).parent().parent().find('td').eq(12).find('input').val(hh+":"+mm+":"+ss);
+	  }
+
+}
+function changeEndDate(flag,date) {
+
+	var dateInfo = "";
+	if (flag == "0") {
+		dateInfo = dateR1.split("-");
+	} else {
+		dateInfo = date.split("-");
+	  }
+	var mon_thirty = new Array("04","06","09","11");
+		var mon_thirtyone = new Array("01","03","05","07","08","10");
+		var mon_feb = new Array("02");
+		var day = dateInfo[2];
+		var month = dateInfo[1];
+		var year = dateInfo[0];
+		if (/^0/i.test(day)) {
+			var f = day[1];
+			day = f;
+		}
+		day = parseInt(day) + 1;
+		if ($.inArray(month,mon_thirty) != -1) {				
+			if (day > 30) {
+				if (/^0/i.test(month)) {
+			        var f = month[1];
+			        month = f;
+			    }
+				month += 1;
+			    day = 1;
+			}
+		} else if ($.inArray(month,mon_thirtyone) != -1) {
+			if (day > 31) {
+				if (/^0/i.test(month)) {
+			        var f = month[1];
+			        month = f;
+			    }
+				month += 1;
+			    day = 1;
+				if (month == 13) {
+					year += 1;
+					month = "01";
+				}
+			}
+		   } else {
+				var isleap = parseInt(year)%4;
+				if (isleap == 0) {
+					if (day > 29) {
+						if (/^0/i.test(month)) {
+				        	var f = month[1];
+						        month = f;
+					    }
+						month += 1;
+						day = 1;
+					}
+				} else {
+					if (day > 28) {
+						if (/^0/i.test(month)) {
+				        	var f = month[1];
+						        month = f;
+					    }
+						month += 1;
+						day = 1;
+					}
+					  }
+			 }
+
+		if (month < 10 && /^0/i.test(month) == false) {
+			month = "0"+month;
+		}
+		if (day < 10 && /^0/i.test(day) == false) {
+			day = "0"+day;
+		}
+
+
+	var clname = "";
+	if (flag == "0") {
+		dateR2 = year+"-"+month+"-"+day;
+		$('.checkboxDevices').each(function() {
+			if ($(this).is(':checked')) {
+	        	$(this).parent().parent().find('td').eq(16).find('input').val(dateR2);
+			}
+		});
+	} else {
+		$('#'+flag).parent().parent().find('td').eq(16).find('input').val(year+"-"+month+"-"+day);
 	  }
 
 }
