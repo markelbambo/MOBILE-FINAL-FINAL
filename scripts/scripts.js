@@ -941,7 +941,7 @@ $( document ).on( "pageinit", "#configEditorPage", function( event ) {
     },350);
 
 	initDialog();
-	loadFilterDevices();
+	//loadFilterDevices();
 	$("#divMenuButton").show();
 	$('#domainText').empty().append(window['variable' + dynamicDomain[pageCanvas] ]);
 /*Grid  Menu icon action bindings*/
@@ -963,7 +963,8 @@ $( document ).on( "pageinit", "#configEditorPage", function( event ) {
 	});
 
 	$(document).on('click', '#CancelRButton', function(){
-		cancelReservation();
+		toConfig();
+		//cancelReservation();
 		resetCommitOptions();
 	});
 	$(document).on('click', '#RequestButton', function(){
@@ -1531,13 +1532,9 @@ $( document ).on( "pageinit", "#configEditorPage", function( event ) {
 		}
 	});
 	$(document).on('click', '#loadactive', function() {
-		if(globalInfoType == "JSON"){
-  	      var devices = getDevicesNodeJSON();
-    	}else{
-        	 var devices =devicesArr;
-	    }
+		var devices = getDevicesNodeJSON();
     	if(devices.length >0){
-        	confirmation("Devices on the canvas will be cleared for this action.<br/> Do you want to continue?","Warning","clearCanvas();loadActiveTableQuery();addHistory('Load Active');");
+        	confirmationloadactive("Devices on the canvas will be cleared for this action.<br/> Do you want to continue?","Warning","loadActiveTableQuery();addHistory('Load Active');");
 	        return;
     	}else{
 			loadActiveTableQuery();
@@ -1768,7 +1765,11 @@ $( document ).on( "pageinit", "#loadActivePop", function( event ) {
 			reverse: false,
 			changeHash: true
 		});
-		showActiveTopology();
+		if(ReleaseFlagLoadActive){
+			cancelReservation();
+		}else{
+			showActiveTopology();
+		}
     });
 	$(document).on('click', '#CloseALButton', function() {
    	   	$.mobile.changePage("#configEditorPage", {

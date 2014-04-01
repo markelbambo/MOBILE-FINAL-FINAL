@@ -358,6 +358,10 @@ var	globalLoadImageDetailCustom = {};
 var	globalLoadConfigDetailPrimary = {};
 var	globalLoadConfigDetailSecondary = {};
 var	globalLoadConfigDetailCustom = {};
+var dateR1 = "";
+var dateR2 = "";
+var timeR1 = "";
+var timeR2 = "";
 
 /*View Options*/
 var viewconfigname = true;

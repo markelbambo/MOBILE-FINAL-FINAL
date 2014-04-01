@@ -10830,7 +10830,7 @@ function editDevInfosPopUp(){
 	editDevInfoAdmin = true;
 	setvariableEditDevice();
 	//showEditDevInfoAdmin(genIds[0]);
-	checkDeviceResStatus(genIds[0]);
+	checkDeviceResStatus(genIds[0],"edit");
 }
 
 /*
@@ -10848,8 +10848,12 @@ function editDevInfosPopUp(){
  #######################################################################
 */
 
-function checkDeviceResStatus(id) {
-	var url = getURL("ADMIN2")+'action=isDeviceRes&query={"QUERY":[{"deviceid":"'+id+'"}]}';
+function checkDeviceResStatus(id,type) {
+	if(type=="edit"){
+		var url = getURL("ADMIN2")+'action=isDeviceRes&query={"QUERY":[{"deviceid":"'+id+'"}]}';
+	}else{
+		var url = getURL("ADMIN2")+'action=isDeviceRes&query={"QUERY":[{"deviceid":"'+id+'", "flag": "1" }]}';
+	}
 	$.ajax({
         url: url,
         dataType: 'html',
@@ -10868,7 +10872,16 @@ function checkDeviceResStatus(id) {
 				alertUser("Device is currently Reserved.");
 				return false;
 			}else{
-				showEditDevInfoAdmin(id);
+				if(type=="edit"){
+					showEditDevInfoAdmin(id);
+				}else if(type=="delete"){
+					if(Result==0){
+						return true;
+					}else{
+						alertUser("Device(s) "+Result+" is/are currently Reserved.");
+						return false;
+					}
+				}
 			}	
         }
     });

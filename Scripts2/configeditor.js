@@ -1006,7 +1006,8 @@ function deviceListPopupTable(load,tab){
 	globalDeviceListLoad = load;
 	globalFlag = false;
 	checkLCArray=[]
-	var hasDevName = getHasDevNameOnArray();
+	//var hasDevName = getHasDevNameOnArray();
+	var hasDevName = globalSelectedDeviceList;
 	if (tab == "import"){
 		globalDevListTab ='import';
 		var query = "{'QUERY':[{'user':'"+globalUserName+"','domainname':'"+window['variable' + dynamicDomain[pageCanvas] ]+"','zone':'','imported':'1','hostname':'"+hasDevName+"'}]}";
@@ -1493,8 +1494,10 @@ function fullHubDisEna(){
         }
 		if(globalSelectedDeviceList.length >= 1){
 			$("#dlistDone").removeAttr("disabled");
+			$("#dlistApply").removeAttr("disabled");
 		}else{
 			$("#dlistDone").attr("disabled","disabled");
+			$("#dlistApply").attr("disabled","disabled");
 		}
 	}else{
     	if(globalSelectedDeviceList.length > 1){
@@ -2464,7 +2467,6 @@ function drawImage(flag,newscale){
         var devices = getDevicesNodeJSON();
     }else{
         var devices = devicesArr;
-        window['variable' + dynamicVar[pageCanvas]].add(window['variable' + dynamicLayer[pageCanvas]]);
     }
     if(devices != null && devices != undefined){
         if(devices.length > 0){
@@ -2521,11 +2523,11 @@ function drawImage(flag,newscale){
             	group = drawOneImage(x2,y2,devices[i],group);
                 window['variable' + dynamicLayer[pageCanvas]].add(group);
                 initImages(group);
-            }
+            }			
             initZoom("reload");
-            window['variable' + dynamicVar[pageCanvas]].add(window['variable' + dynamicLayer[pageCanvas]]);
-			window['variable' + dynamicLayer[pageCanvas]].batchDraw();
-        }
+    	}
+		window['variable' + dynamicVar[pageCanvas]].add(window['variable' + dynamicLayer[pageCanvas]]);
+		window['variable' + dynamicLayer[pageCanvas]].batchDraw();
     }else{
         $("#showTooltipInfo").hide();
     }
@@ -3889,15 +3891,20 @@ function getStatusAutoD(){
 		showAutoSavePage();
 		autoDcomplete = false;	
 	}else{
+		alertUser("Discovery is still ongoing.");
+		return;
+/*	DO NOT DELETE
 		initAutoD = "";
-/*	do not delete
- *		if(AutoDType!="admin"){
+
+----------
+/*		if(AutoDType!="admin"){
 			$('#newdevicePopUp').dialog('destroy');
 		}
-*/
+----------
 		$('#autoDLogsDialog').dialog('destroy');
 		autoDcomplete = false;
 		clearTimeout(initAutoD);
+*/
 	}
 }
 
@@ -4652,9 +4659,9 @@ function loadLoadConfig(){
         async:false,
         dataType: 'html',
         success: function(data) {
-            var type = $('#loadConfTypeSelect > option:selected').html();
+            var type = $('#loadConfTypeSelect').val();;
             var selOpt="";
-            selOpt += "<option>Select Configuration</option>";
+            selOpt += "<option value=''>Select Configuration</option>";
 
             if(InfoType == "XML"){
                 var parser = new DOMParser();
@@ -4694,7 +4701,9 @@ function loadLoadConfig(){
                 var CONFIGURATION = data2.MAINCONFIG[0].CONFIGURATION;
                 for (var x=0; x<CONFIGURATION.length; x++){
                     var typeFrmName = CONFIGURATION[x].Name.split(".")[1];
-                    selOpt += "<option style='"+vw+"' value='"+CONFIGURATION[x].Name+"' type='"+typeFrmName+"' id='"+CONFIGURATION[x].Id+"' filetype='"+CONFIGURATION[x].FileType+"'>"+CONFIGURATION[x].Name+"</option>";
+					if(type.toLowerCase() == CONFIGURATION[x].FileType.toLowerCase()){
+	                    selOpt += "<option style='"+vw+"' value='"+CONFIGURATION[x].Name+"' type='"+typeFrmName+"' id='"+CONFIGURATION[x].Id+"' filetype='"+CONFIGURATION[x].FileType+"'>"+CONFIGURATION[x].Name+"</option>";
+					}
                 }
             }
             $("#loadConfSelect").html(selOpt);
@@ -4726,7 +4735,10 @@ function loadLoadConfig(){
  *
  */
 function loadLoadConfigOk(confName,mainid,fileType){
-			$("#configPopUp").dialog('close');
+	if($('#loadConfSelect').val() == ""){
+		return
+	}
+	$("#configPopUp").dialog('close');
 	if(globalDeviceType=="Mobile"){
 		loading('show');
 	}else{
@@ -11919,7 +11931,7 @@ function dynamicCanvas(num){
 	$("#configContent"+pageCanvas).css("cursor","default");
     $("#Magnify").attr("title","Zoom");
     zoomButtonStatus = "inactive";
-	if(globalDeviceType == "Mobile" && divctr == 2){
+	if(globalDeviceType == "Mobile" && $("#paginationcanvas li").length == 2){
         error("Canvas limit reached.","Notification");
         return;
     }
@@ -13169,10 +13181,29 @@ function emailOption(){
 			getOnlineUsers();	
 			$("#user").multiselect();
 //			$("#groups").multiselect();
-//			$("#deviceLogs").multiselect();
+			
+			$("#deviceLogs").multiselect();
 
 		});
 }
+/*
+ *FUNCTION NAME : hidetextbox()
+ *AUTHOR        :Mary Grace P. Delos Reyes
+ *DATE          :March 26, 2014
+ *MODIFIED BY   :
+ *REVISON  DATE :
+ *REVISON #     :
+ *DESCRIPTION   :
+ *PARAMETERS    :
+*/
+
+$('#sendto').click(function() {
+    $('#textbox1').toggle();
+});
+$('#sendCc').click(function() {
+    $('#textbox2').toggle();
+});
+
 
 /*
  *FUNCTION NAME : attach()
@@ -13184,7 +13215,7 @@ function emailOption(){
  *DESCRIPTION   :
  *PARAMETERS    :
 */
-
+/*
 function attach(){
 //	var file = document.getElementById("").value;
 //	var	blob= new Blob ([text], {type: "text/plain;charset=utf-8"});
@@ -13201,7 +13232,7 @@ function attach(){
 
 	});
 
-}
+}*/
 /*
  *FUNCTION NAME : sendEmail()
  *AUTHOR        :Mary Grace P. Delos Reyes
@@ -13212,7 +13243,7 @@ function attach(){
  *DESCRIPTION   :
  *PARAMETERS    :
 */
-
+emailPass=true;
 function sendEmail(){
 	var sendTo = $('#emailAccount').val();
 	var sendCC =$('#emailAccountCC').val();
@@ -13223,7 +13254,7 @@ function sendEmail(){
 	var device =$('#deviceLogs').val();
 	var user = $('#userLogs').val();
 	var group =$('#groupLogs').val();
-	var url ="https://"+CURRENT_IP+"/cgi-bin/NFast_3-0/CGI/RESERVATIONMANAGER/FastConsoleCgi.py?action=sendemail&query={'QUERY': [{'userFrom':'"+globalUserName+"','cc':'"+cc+"','userTo':'"+userTo+"','msg':'"+msg+"','subject':'"+subject+"','sendTo':'"+sendTo+"','sendCC':'"+sendCC+"','device':'"+device+"','user':'"+userLogs+"','group'='"+group+"'}]}";
+	var url ="https://"+CURRENT_IP+"/cgi-bin/NFast_3-0/CGI/RESERVATIONMANAGER/FastConsoleCgi.py?action=sendemail&query{'QUERY': [{'userFrom':'"+globalUserName+"','cc':'"+cc+"','userTo':'"+userTo+"','msg':'"+msg+"','subject':'"+subject+"','sendTo':'"+sendTo+"','sendCC':'"+sendCC+"','device':'"+device+"','user':'"+userLogs+"','group'='"+group+"'}]}";
 
   $.ajax({
         url: url,
@@ -13236,7 +13267,19 @@ function sendEmail(){
 			var data = data.replace(/'/g,'"');
 			var json = $.parseJSON(data);
 			var msg = json.RESULT[0].Result;
-			alerts(msg)
+			if (emailPass==false){
+				$('#emailAccount').val();
+				$('#emailAccountCC').val();
+				$('#sendTo').val();
+				$('#sendCc').val();
+			}else{
+				 $('#emailAccount').val();
+				 $('#emailAccountCC').val();
+				 $('#sendCc').val();
+  			     $('#sendTo').val();
+				emailPass==empty;
+			}
+			alerts(msg);
 			$("#consolePopUpClose").dialog();	
 			}
 	});	
@@ -13268,11 +13311,12 @@ function getEmail(){
  		   var dat = data.replace(/'/g,'"');
 			globalparsedjson = dat
             var json = jQuery.parseJSON(dat);
-            var parsed = json.RESULT[0].Email;
-			var	w = parsed.split(",");
+            var parsed = json.MAINCONFIG[0].EMAIL;
+			//var	w = parsed.split(",");
 			var	str='';
-	 		for(var i=0; i< w.length; i++){
-				str+="<option >"+w[i]+"</option>"
+	 		for(var i=0; i< parsed.length; i++){
+				var username = parsed[i].Username;
+				str+="<option >"+username+","+parsed[i].Email+"</option>"
 			}
 			$('#emailAccount').empty().append(str);			 	
 			$('#emailAccountCC').empty().append(str);
@@ -15522,6 +15566,7 @@ function validateFileName(fname,path) {
  * PARAMETERS        :	 msg, todo, type
  */
 function alerts(msg,todo,type,source,todo2,todo3) {
+console.log(todo,'todo');
     var res=false;
     switch(type) {
         case "prompt":
@@ -16520,7 +16565,7 @@ function loadChatSession(){
 			data = data.replace(/'/g,'"');
 			var json = jQuery.parseJSON(data); 
 		
-			for (var i = 0;i<json.data[0].row.length; i++){
+//			for (var i = 0;i<json.data[0].row.length; i++){
 				var sender = json.data[0].row[i].UsernameTo;
 				var receiver = json.data[0].row[i].UsernameFrom;
 				var time = json.data[0].row[i].TimeStamp;
@@ -16530,7 +16575,7 @@ function loadChatSession(){
 				}else{
 					str += "<div style ='text-align:right; border-bottom:1px solid #bdbdbd;'> "+ message +" <div style ='text-align:left;width:10px;'> "+ time +" </div></div>";
 				}
-			}
+		//	}
 			clearInterval(setInt);
 				setInt ="";
 				globalRefresh = true;
@@ -16776,10 +16821,14 @@ function autoCreateLine(){
 			}
 		}
 	}else if(type == "fullmesh"){
+		var checkArr = [];
 		for(var i = 0 ; i < dev.length; i++){
 			for(var x = 0 ; x < dev.length; x++){
+				
 				if(dev[i].HostName != dev[x].HostName){
+				
 					var lineInfo = checkSamePort(dev[i],dev[x]);
+					console.log('>>>>>>>>>>',lineInfo);
 					var name = lineInfo[0]+"_"+i;
 					if(lineInfo.length > 0){
 						storeLinkInformation(name,dev[i],dev[x],"","","","","","","",lineInfo[2],lineInfo[1],"","","","","","","","","");	
@@ -16803,7 +16852,6 @@ function autoCreateLine(){
  *  PARAMETERS    : 
  *
  */
-
 function checkSamePort(devices,devices2){
 	var dataArr = [];
     var prtArr = getAllPortOfDevice(devices.ObjectPath);
@@ -16849,9 +16897,6 @@ function checkSamePort(devices,devices2){
             break;
         }
     }
-
-
-
    	return dataArr;
 }
 /*
@@ -25319,6 +25364,8 @@ function showConsolePopUp(device,devicesArr){
 				addUserToGroup();
 			});
 			createDynamicTabForConsole(validDevices);
+			 $("#deviceLogs").multiselect();
+
 		});
 	} 
 }
@@ -25946,3 +25993,42 @@ function highlightTr(tr,flag){
 		}
 	}
 }
+/*
+ * 
+ *  FUNCTION NAME : confirmationloadactive
+ *  AUTHOR        : Juvindle C Tina
+ *  DATE          : April 1, 2014
+ *  MODIFIED BY   :
+ *  REVISION DATE :
+ *  REVISION #    :
+ *  DESCRIPTION   : load active confirmation
+ *  PARAMETERS    : msg,header,todo
+ * 
+ */
+function confirmationloadactive(msg,header,todo) {
+	$(".ui-popup").popup("close");
+	setTimeout(function(){
+		if(globalMAINCONFIG[pageCanvas].MAINCONFIG[0].ResourceId != null && globalMAINCONFIG[pageCanvas].MAINCONFIG[0].ResourceId != "" && globalMAINCONFIG[pageCanvas].MAINCONFIG[0].ResourceId != undefined){
+			$("#cancelResCheckboxloadactive").show();
+		}else{
+			$("#cancelResCheckboxloadactive").hide();
+		}
+		$('#confirmationHeaderloadactive').empty().append(header);
+		$('#confirmationBodyloadactive').empty().append(msg);
+		$('#confirmationloadactive').popup( {create: function(){ }});	
+		setTimeout(function(){
+	   	    $('#confirmationloadactive').show().popup("open");	
+			$(document).on('click','#confirmYesload', function(){
+				$('#confirmationloadactive').popup('close').hide();
+				if($("#clearCanvasCancelPromptloadactive").is(":checked") == true){
+					ReleaseFlagLoadActive = true;
+				}
+				eval(todo);
+			});
+			$(document).on('click','#confirmNoload', function(){
+				$('#confirmationloadactive').popup("close").hide();
+			});
+		},200);
+	},200);
+}
+

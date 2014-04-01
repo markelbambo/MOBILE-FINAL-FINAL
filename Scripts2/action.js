@@ -368,7 +368,6 @@ function loadActiveTableQuery(ths){
 		globalLAFlag = $('#cbShowLA').is(':checked');	
 	}
 	if(globalLAFlag == false){
-		//var url = getURL('ConfigEditor2',"XML")+"action=loadactive&query=userName="+globalUserName;
 		var url = getURL('ConfigEditor2',"JSON")+"action=loadactive&query={'QUERY':[{'userName':"+"'"+globalUserName+"'}]}";
 	}else{
 		var url = getURL('ConfigEditor2',"JSON")+"action=showallreservation&query={'QUERY':[{'userName':"+"'"+globalUserName+"'}]}";//userName="+globalUserName;
@@ -378,7 +377,7 @@ function loadActiveTableQuery(ths){
 		setTimeout(function(){
 	        $.mobile.changePage($('#loadActivePop'),{
 	            transition: "pop"
-		        });
+		    });
 	    },1500);
 		loading('show');
 	}else{
@@ -495,7 +494,11 @@ function loadActiveTableQuery(ths){
                     	}
 					}
 				}
-				$("#ActiveTable > tbody").empty().append(html);
+				if(globalDeviceType == "Mobile"){
+					$("#LoadActiveTable > tbody").empty().append(html);
+				}else{
+					$("#ActiveTable > tbody").empty().append(html);
+				}
 				$(".ui-dialog").position({
 	    	    	my: "center",
 		        	at: "center",

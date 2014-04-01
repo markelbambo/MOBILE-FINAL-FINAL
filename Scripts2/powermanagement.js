@@ -1816,7 +1816,9 @@ function createInputTr(label,inputId,dispFlag,wid){
 	var retStr = "<tr style='"+disp+"'><td style='"+style+"'>"+label+"</td>";
 	var tdStyle = "style='padding-top:5px;padding-bottom:5px;'";
 	retStr += "<td "+tdStyle+"><input id='"+inputId+"' ";
-	retStr += "style='width:191px;height:25px;' type='text'></td></tr>";
+	var type = "text"
+	if(label.toLowerCase().match(/password/g)){ type = "Password"; }
+	retStr += "style='width:191px;height:25px;' type='"+type+"'></td></tr>";
 	return retStr;
 }
 /*--------------------------------------------------*/

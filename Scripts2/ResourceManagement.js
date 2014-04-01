@@ -3928,7 +3928,7 @@ function queryCreateXMLData(){
 	var qstr = "";
 	var qstr1 = ""; 	
 	var devIds2 = new Array();
-
+	getDevicesDateTime();
 	var ctrflag = 0;
 	for (var i = 0; i < DeviceId.length; i++) {
 		var devType = getdevicetype(DeviceId[i]);
@@ -6107,14 +6107,22 @@ function checkAllRM(table){
 		}
 	});
 	$('input:checkbox[name="ReservationReserveSel"]').each(function(){
+		var rids = $(this).attr('rIds');
+		var devids = $(this).attr('did');
+		console.log("ASASAS");
 		if($('#'+table).is(":checked")){
+			if(!$(this).is(':disabled')){  
 			globalResourceId.push($(this).attr('id'));	
 			$(this).parent().parent().addClass('highlight');
 			$(this).prop('checked',true);
+			checkSingleRM('ReservationReserve',this);
+			}
 		}else{
 			$(this).prop('checked',false);
+			$(this).prop('disabled',false);
 			$(this).parent().parent().removeClass('highlight');
 		}
+		
 	});
 	enableRMButtons();
 	PortId = [];	
@@ -6332,54 +6340,49 @@ function checkSingleRM(table,src){
 		});
 		enableRMButtons();
 	}else if(table == "ReservationDevices"){
-		StartDate = [];
-		StartTime = [];
-		EndDate = [];
-		EndTime = [];
-		TimeInterval = [];
-		Recurrence = [];	
-		DeviceId = [];
-		$('input:checkbox[name="ReservationDevicesSel"]').each(function(){
-			if($(this).is(':checked')){
-		//		$('#ReserveButton').removeAttr('disabled',false);
-				$(this).parent().parent().addClass('highlight');
-				var gethost = $(this).attr("hostname");
-				var getmodel = $(this).attr("model");
-				
-				RMLoadObject.push({"HostName":gethost,"Model":getmodel});
-				DeviceId.push($(this).attr('devId'));
-				StartDate.push($.trim($(this).parent().parent().find('td').eq(11).find('input').val()));
-				TimeInterval.push($.trim($(this).parent().parent().find('td').eq(13).find('input').val()));
-				Recurrence.push($.trim($(this).parent().parent().find('td').eq(14).find('input').val()));
-				StartTime.push($.trim($(this).parent().parent().find('td').eq(12).find('input').val()));
-				EndDate.push($.trim($(this).parent().parent().find('td').eq(16).find('input').val()));
-				EndTime.push($.trim($(this).parent().parent().find('td').eq(17).find('input').val()));
-				DeviceReservation.push($.trim($(this).parent().parent().find('td').eq(15).find('select').val()));
-				getResLimit();
-				getdevicetype(this.id);	
-				$(this).parent().parent().find('td').eq(11).find('input').removeAttr('disabled');
-				$(this).parent().parent().find('td').eq(13).find('input').removeAttr('disabled');
-				$(this).parent().parent().find('td').eq(14).find('input').removeAttr('disabled');
-				$(this).parent().parent().find('td').eq(12).find('input').removeAttr('disabled');
-				$(this).parent().parent().find('td').eq(16).find('input').removeAttr('disabled');
-				$(this).parent().parent().find('td').eq(17).find('input').removeAttr('disabled');
-				$(this).parent().parent().find('td').eq(15).find('select').removeAttr('disabled');
-				ctr++;
-			}else{
-			//	disableRMButtons();
-				$(this).parent().parent().removeClass('highlight');
-				$(this).parent().parent().find('td').eq(11).find('input').attr('disabled',true);
-				$(this).parent().parent().find('td').eq(13).find('input').attr('disabled',true);
-				$(this).parent().parent().find('td').eq(14).find('input').attr('disabled',true);
-				$(this).parent().parent().find('td').eq(12).find('input').attr('disabled',true);
-				$(this).parent().parent().find('td').eq(16).find('input').attr('disabled',true);
-				$(this).parent().parent().find('td').eq(17).find('input').attr('disabled', true);
-				$(this).parent().parent().find('td').eq(15).find('select').attr('disabled',true);
-				ctr--;
+		console.log(src,'srcccc');
+		var time = convertTime();
+		var dataArr  = time.split(":");
+		var endTime = parseInt(dataArr[0])+2+":"+dataArr[1]+":"+dataArr[2];
+		var date = new Date();
+		var month = parseInt(date.getMonth())+1;
+		if(month < 10 ){
+			month = "0"+month;		
+		}
+		var day = date.getDate();
+		if(day < 10){
+			day = "0"+day;
+		}
+		var dateToday = date.getMonth()+1+'/'+date.getDate()+'/'+date.getFullYear()
+		var devid = $(src).attr('id');
+		if($(src).is(':checked')){	
+			if(DeviceId.indexOf(devid) == -1){
+				DeviceId.push(devid);
 			}
-			ctrtotal++;
-		});
-		
+			getResLimit();
+			getdevicetype(devid);	
+
+			var trId = $(src).attr('id'); //
+			$('#tr'+trId).find('td').eq(11).find('input').removeAttr('disabled');	
+			$('#tr'+trId).find('td').eq(12).find('input').removeAttr('disabled');	
+			$('#tr'+trId).find('td').eq(16).find('input').removeAttr('disabled');	
+			$('#tr'+trId).find('td').eq(17).find('input').removeAttr('disabled');	
+			$('#tr'+trId).find('td').eq(13).find('input').removeAttr('disabled');	
+			$('#tr'+trId).find('td').eq(14).find('input').removeAttr('disabled');	
+		}else{
+			if(DeviceId.indexOf(devid) != -1){
+				var index = DeviceId.indexOf(devid);
+				DeviceId.splice(index,1);
+			}		
+			$('#tr'+trId).find('td').eq(11).find('input').attr('disabled');	
+			$('#tr'+trId).find('td').eq(12).find('input').attr('disabled');	
+			$('#tr'+trId).find('td').eq(16).find('input').attr('disabled');	
+			$('#tr'+trId).find('td').eq(17).find('input').attr('disabled');	
+			$('#tr'+trId).find('td').eq(13).find('input').attr('disabled');	
+			$('#tr'+trId).find('td').eq(14).find('input').attr('disabled');	
+		}
+		ctr = DeviceId.length;
+		ctrtotal = $('.checkboDevices').length;
 		enableRMButtons();
 	}else if(table == "ReservationImportedDevices"){
 		$('input:checkbox[name="ReservationImportedSel"]').each(function(){
@@ -6433,6 +6436,7 @@ function checkSingleRM(table,src){
 		$('input:checkbox[name="ManageDevicesSel"]').each(function(){
 			var curIdx = genIds.indexOf($(this).attr('devId'));
 			if($(this).is(':checked')){
+				ctr++;
 				$(this).parent().parent().addClass('highlight');
 				if(curIdx==-1){
 					genIds.push($(this).attr('devId'));
@@ -6441,12 +6445,15 @@ function checkSingleRM(table,src){
 				if(curIdx>-1){
 					genIds.splice(curIdx,1);
 				}
+				ctr--;
 				$(this).parent().parent().removeClass('highlight');
 			}
-			enDisEditDelBtnManageDev();
+			ctrtotal++;
+		//	enDisEditDelBtnManageDev();
 		});
 		
 	}
+	console.log(ctr+" -- "+ctrtotal);
 	if(ctr == ctrtotal){
 		$('#cb'+globalPageRM).prop('checked',true);
 	}else{
@@ -6677,6 +6684,11 @@ function clearSchedHistory(){
 
 function deleteMDevices(){
 	if(genIds.length<1){ alertUser("No device selected."); return; }
+	setTimeout(function(){
+		if(!checkDeviceResStatus(genIds,"delete")){
+			return;
+		}
+	},300);
 	prompts='Are you sure you want to Delete device(s)?'
 	$('#Alert').dialog({
 		autoOpen: false,
@@ -6916,14 +6928,13 @@ function loadDevicesHTML5(){
 	if(day < 10){
 		day = "0"+day;
 	}
-	var dateToday = date.getMonth()+1+'/'+date.getDate()+'/'+date.getFullYear()
 	var tableClass = "";
 	var page = $('#RMPageNumber').text();
 	var limit = $('#ResourceManagementPageLimit').val();
 
 	var url ="https://"+CURRENT_IP+"/cgi-bin/NFast_3-0/CGI/RESOURCEMANAGEMENT/NFastRMCGI.py?action=ReservationDevice&query={'QUERY':[{'limit':'"+limit+"','page':'"+page+"','sort':'','orderby':'','user':'"+globalUserName+"','filter':'"+globalStrFilter5+"','domain':'"+domain+"','ZoneName':'"+zoneName+"','GroupName':'"+groupName+"'}]}";
 
-			$("#RMDevices-table > tbody").html(loader);
+	$("#RMDevices-table > tbody").html(loader);
 	var dateToday = date.getMonth()+1+'/'+date.getDate()+'/'+date.getFullYear()
 	$.ajax({
         url: url,
@@ -6953,7 +6964,7 @@ function loadDevicesHTML5(){
             for(var a =0; a< json.root[0].row.length; a++){
 
 				html += "<tr id='tr"+json.root[0].row[a].DeviceId+"' class='trDevices "+tableClass+"' devId = '"+json.root[0].row[a].DeviceId+"' rId='"+json.root[0].row[a].ResourceId+"'>";
-				html += "<td><input type='checkbox' devId = '"+json.root[0].row[a].DeviceId+"' id='"+json.root[0].row[a].DeviceId+"' name='ReservationDevicesSel' hostname='"+json.root[0].row[a].HostName+"' model='"+json.root[0].row[a].Model+"' onclick='checkSingleRM(\"ReservationDevices\");'/></td>";
+				html += "<td><input type='checkbox' devId = '"+json.root[0].row[a].DeviceId+"' id='"+json.root[0].row[a].DeviceId+"' name='ReservationDevicesSel' hostname='"+json.root[0].row[a].HostName+"' model='"+json.root[0].row[a].Model+"' class='checkboxDevices' onclick='checkSingleRM(\"ReservationDevices\",this);'/></td>";
 		        html += "<td class='ReservationDevices'>"+json.root[0].row[a].DeviceId+"</td>";
 		        html += "<td did='td"+json.root[0].row[a].DeviceId+"' class='toolTip' onclick='ShowDeviceInformation(\""+json.root[0].row[a].HostName+"\");' style='cursor:pointer;'><span>"+json.root[0].row[a].HostName+"</span><div class='tableToolTip' id='divtoolTip"+json.root[0].row[a].DeviceId+"' style='display:none'><ul>";
 				html += getTooltipInfo(json.root[0].row[a],"HostName");
@@ -6966,12 +6977,12 @@ function loadDevicesHTML5(){
 				html += "<td>"+json.root[0].row[a].DomainName+"</td>";
 				html += "<td>"+json.root[0].row[a].ZoneName+"</td>";
 				html += "<td>"+json.root[0].row[a].GroupName+"</td>";
-				html += "<td><input did='"+json.root[0].row[a].DeviceId+"' onchange='applySameDateTime(this);' style='border:none;text-align:center;' type='text' id='StartDate"+a+"' class='datepickerdev' readonly='yes' value='"+dateToday+"'/></td>";
-		        html += "<td><input did='"+json.root[0].row[a].DeviceId+"' onchange='applySameDateTime(this)' style='border:none;text-align:center;' type='text' id='StartTime"+a+"' class='timepicker' readonly='yes' value='"+time+"' onchange='' /></td>";
-				html += "<td><input style='border:none;text-align:center;' id='intervalRR' class='interval' type='text' onkeyup='setIteration(this.value);' onkeypress='return checkNumberInputChar(event,this);' value='0'/></td>";
-		        html += "<td><input style='border:none;text-align:center;' id='iterationRR"+a+"' class='iteration' type='text' onkeyup='setIteration(this.value)' onkeypress='return checkNumberInputChar(event,this);' value='1'/></td>";
+				html += "<td><input title='Start date' did='"+json.root[0].row[a].DeviceId+"' onchange='popUpDate(this.value,11);' style='border:none;text-align:center;' type='text' id='StartDate"+a+"' class='datepickerdev' readonly='yes' value='"+dateToday+"'/></td>";
+		        html += "<td><input title='Start time' did='"+json.root[0].row[a].DeviceId+"' onchange='popUpDate(this.value,12);' style='border:none;text-align:center;' type='text' id='StartTime"+a+"' class='timepicker' readonly='yes' value='"+time+"' /></td>";
+				html += "<td><input title='Interval' style='border:none;text-align:center;' id='intervalRR' class='interval' type='text' onkeyup='setIteration(this.value);' onkeypress='return checkNumberInputChar(event,this);' value='0'/></td>";
+		        html += "<td><input title='Iteration' style='border:none;text-align:center;' id='iterationRR"+a+"' class='iteration' type='text' onkeyup='setIteration(this.value)' onkeypress='return checkNumberInputChar(event,this);' value='1'/></td>";
 
-		        html += "<td><select style='border:none;' class='DeviceType' id='deviceType"+json.root[0].row[a].DeviceId+"'>";
+		        html += "<td><select style='border:none;' title='Type' class='DeviceType' id='deviceType"+json.root[0].row[a].DeviceId+"'>";
 				if(json.root[0].row[a].DeviceType == "TestTool"){
 					html += "<option>Exclusive</option>";
 					html += "<option selected>Non - Exclusive</option>";
@@ -6981,8 +6992,8 @@ function loadDevicesHTML5(){
 				}
 				html += "</select></td>";
 
-				html += "<td><input style='border:none;text-align:center;' id='EndDate"+a+"' type='text' did='"+json.root[0].row[a].DeviceId+"'  readonly='yes' class='datepickerdev' value='"+dateToday+"' onchange='applySameDateTime(this);'/></td>";
-		        html += "<td><input did='"+json.root[0].row[a].DeviceId+"' onchange='applySameDateTime(this);' style='border:none;text-align:center;' id='EndTime"+a+"' type='text' onkeypress='return checkNumberInputChar(event,this);' class='timepicker' value='"+endTime+"'/></td>";
+				html += "<td><input style='border:none;text-align:center;' id='EndDate"+a+"' title='End date' type='text' did='"+json.root[0].row[a].DeviceId+"'  readonly='yes' class='datepickerdev' value='"+dateToday+"' onchange='popUpDate(this.value,15)'/></td>";
+		        html += "<td><input did='"+json.root[0].row[a].DeviceId+"' onchange='popUpDate(this.value,16);' title='End time' style='border:none;text-align:center;' id='EndTime"+a+"' type='text' onkeypress='return checkNumberInputChar(event,this);' class='timepicker' value='"+endTime+"'/></td>";
 				html +="</tr>";
 				
 			}
@@ -10003,9 +10014,6 @@ function computeMeNow(edate,etime,diff){
     }
 
     var myDate=new Date(syear,smonth,sday,shour,smin,ssec);
-    /*myDate.setDate(myDate.getDate()+parseInt(day));*/
-    //var nhour = parseInt(hour)*60*60*1000;
-    //var nmin = parseInt(min)*60*1000;
     if (diff != 0)
 	    myDate.setTime(myDate.getTime()+diff);
 
@@ -10035,16 +10043,20 @@ function computeMeNow(edate,etime,diff){
 
 }
 function updateCurrentExtension() {
-    //var url='https://'+CURRENT_IP+'/cgi-bin/NFast_3-0/CGI/RESOURCEMANAGEMENT/NFastRMCGI.py?action=updatecurrentextension&query=user='+globalUserName+'^resourceid='+globalResourceId;
+	var update = "";
     var url=getURL('R4')+'action=updatecurrentextension&query={"QUERY":[{"user":"'+globalUserName+'","resourceid":"'+globalResourceId+'"}]}';
     $.ajax({
 		url: url,
         dataType: 'html',
         async: false,
         success:function(data) {
+			data = data.replace(/'/g,'"');
+			var json = jQuery.parseJSON(data);
+			update = json.RESULT[0].Result;			
+
         }
     });
-
+	return update
 }
 
 function emptyStartOfReservation() {
@@ -10221,47 +10233,598 @@ function setIteration(val){
 	if(val == ""){
 		alerts('Invalid Input');
 	}
+}
+function getDevicesDateTime(){
+	var ctr = 0;
+	StartDate = [];
+	StartTime = [];
+	EndDate = [];
+	EndTime = [];
+	TimeInterval = [];
+	Recurrence = [];	
+	DeviceId = [];
+	$('input:checkbox[name="ReservationDevicesSel"]').each(function(){
+			if($(this).is(':checked')){
+				$(this).parent().parent().addClass('highlight');
+				var gethost = $(this).attr("hostname");
+				var getmodel = $(this).attr("model");
+				RMLoadObject.push({"HostName":gethost,"Model":getmodel});
+				DeviceId.push($(this).attr('devId'));
+				StartDate.push($.trim($(this).parent().parent().find('td').eq(11).find('input').val()));
+				TimeInterval.push($.trim($(this).parent().parent().find('td').eq(13).find('input').val()));
+				Recurrence.push($.trim($(this).parent().parent().find('td').eq(14).find('input').val()));
+				StartTime.push($.trim($(this).parent().parent().find('td').eq(12).find('input').val()));
+				EndDate.push($.trim($(this).parent().parent().find('td').eq(16).find('input').val()));
+				EndTime.push($.trim($(this).parent().parent().find('td').eq(17).find('input').val()));
+				DeviceReservation.push($.trim($(this).parent().parent().find('td').eq(15).find('select').val()));
+				console.log(StartDate,'Start');
+				ctr++;
+			}
+		});
 
 }
-function applySameDateTime(obj){
-	var date = new Date();
-	var month = parseInt(date.getMonth())+1;
-	if(month < 10 ){
-		month = "0"+month;		
-	}
-	var day = date.getDate();
-	if(day < 10){
-		day = "0"+day;
-	}
-	var dateToday = date.getMonth()+1+'/'+date.getDate()+'/'+date.getFullYear()
 
-	var time = convertTime();
-	var dataArr  = time.split(":");
-	var endTime = parseInt(dataArr[0])+2+":"+dataArr[1]+":"+dataArr[2];
-	var startTime = parseInt(dataArr[0])+":"+dataArr[1]+":"+dataArr[2];
+function popUpDate(val,index) {
+console.log(index,val,'jdjdjdjdj');
+	var clname = "";
+	var isvalid = validateTimeDateInfo(val,index,dateR1);
 
-	var trId = $(obj).attr('did'); //
-	var sdate = $('#tr'+trId).find('td').eq(11).find('input').val();	
-	var stime =  $('#tr'+trId).find('td').eq(12).find('input').val();	
-	var edate =  $('#tr'+trId).find('td').eq(16).find('input').val();	
-	var etime =  $('#tr'+trId).find('td').eq(17).find('input').val();	
-	var iter =  $('#tr'+trId).find('td').eq(13).find('input').val();	
-	var interval =  $('#tr'+trId).find('td').eq(14).find('input').val();	
-	$('.trDevices').each(function(){
-		if($(this).find('td').eq(0).find('input').is(':checked')){
-			$(this).find('td').eq(11).find('input').val(sdate);
-			$(this).find('td').eq(12).find('input').val(stime);
-			$(this).find('td').eq(16).find('input').val(edate);
-			$(this).find('td').eq(17).find('input').val(etime);
-			$(this).find('td').eq(13).find('input').val(iter);
-			$(this).find('td').eq(14).find('input').val(interval);
-		}else{
-			$(this).find('td').eq(11).find('input').val(dateToday);
-			$(this).find('td').eq(12).find('input').val(startTime);
-			$(this).find('td').eq(16).find('input').val(dateToday);
-			$(this).find('td').eq(17).find('input').val(endTime);
-			$(this).find('td').eq(13).find('input').val(1);
-			$(this).find('td').eq(14).find('input').val(0);
+	if (isvalid == 0) {
+		return;
+	} 
+
+	if (index == 15 && val == 0) {
+		alerts("Invalid Iteration");
+		$('input:checkbox[name="ReservationDevicesSel"]').each(function(){
+			$(this).attr('checked',false);
+			$(this).parent().parent().removeClass('highlight');
+				selectedDevice = "";
+				dateR1 = "";
+				dateR2 = "";
+				timeR1 = "";
+				timeR2 = "";
+				intervalR = "0";
+	            iterationR = "1";
+					$(this).parent().parent().find('td').eq(11).find('input').attr('disabled','true').val('');
+                    $(this).parent().parent().find('td').eq(12).find('input').attr('disabled','true').val('');
+                    $(this).parent().parent().find('td').eq(16).find('input').attr('disabled','true').val('');
+                    $(this).parent().parent().find('td').eq(17).find('input').attr('disabled','true').val('');
+                    $(this).parent().parent().find('td').eq(13).find('input').attr('disabled',true).val('');
+                    $(this).parent().parent().find('td').eq(14).find('input').attr('disabled',true).val('');
+
+		});
+		val = '1';
+		return;
+	}
+	if (index == 14) {
+		var inva = 0;
+		if (iterationR == 1 && (val == "")) {
+			alerts("Invalid Interval");
+			inva = 1;
+		} else if (iterationR > 1 && (val < 10 || val == "")) {
+			alerts("Invalid Interval. Interval is minimum of 10 minutes for multiple iterations.");
+			inva = 1;
+		  }
+
+		if (inva == 1) {
+			$('input:checkbox[name="ReservationDevicesSel"]').each(function(){
+				$(this).attr('checked',false);
+				$(this).parent().parent().removeClass('highlight');
+					selectedDevice = "";
+					dateR1 = "";
+					dateR2 = "";
+					timeR1 = "";
+					timeR2 = "";
+					intervalR = "0";
+	        	    iterationR = "1";
+					$(this).parent().parent().find('td').eq(11).find('input').attr('disabled','true').val('');
+                    $(this).parent().parent().find('td').eq(12).find('input').attr('disabled','true').val('');
+                    $(this).parent().parent().find('td').eq(16).find('input').attr('disabled','true').val('');
+                    $(this).parent().parent().find('td').eq(17).find('input').attr('disabled','true').val('');
+                    $(this).parent().parent().find('td').eq(13).find('input').attr('disabled',true).val('');
+                    $(this).parent().parent().find('td').eq(14).find('input').attr('disabled',true).val('');
+			});
+			val = '0';
+			return;
+		}
+	}
+
+
+	var cnt = 0;
+	$('.checkboxDevices').each(function() {
+		if ($(this).is(':checked')) {
+			cnt++;	
 		}
 	});
+
+
+	if (cnt > 1) {
+		$('#Alert').dialog({
+			autoOpen: false,
+			resizable: false,
+			modal: true,
+			height: 200,
+			width: 300,
+			closeOnEscape: false,
+			open: function(event, ui) { $(".ui-dialog-titlebar-close", ui.dialog).hide();  },
+			buttons: {
+				"Yes": function(){
+					$(this).dialog('close');
+					$('.checkboxDevices').each(function() {
+						if ($(this).is(':checked')) {
+		   		        	$(this).parent().parent().find('td').eq(index).find('input').val(val);
+						}
+					});
+					switch (index) {
+						case "11": dateR1 = val; autoCalculate("StartDate","0"); break;
+						case "12": timeR1 = val; autoCalculate("StartTime","0"); timeout1 = null; break;
+						case "16": dateR2 = val; autoCalculate("EndDate","0"); break;
+						case "17": timeR2 = val; autoCalculate("EndTime","0"); timeout1 = null; break;
+						case "13": intervalR = val; timeout = null; break;
+						case "14": iterationR = val;  timeout = null;  break;
+					}
+				},
+				"No": function() {
+					$(this).dialog('close');
+					var tocompare = "";
+					var loc = "";
+					$('.checkboxDevices').each(function() {
+						if ($(this).is(':checked')) {
+							switch (index) {
+								case "11": tocompare = dateR1; loc = "StartDate"; break;
+								case "12": tocompare = timeR1; loc = "StartTime"; break;
+								case "13": tocompare = intervalR; break;
+								case "14": tocompare = iterationR; break;
+								case "16": tocompare = dateR2; loc = "EndDate"; break;
+								case "17": tocompare = timeR2; loc = "EndTime"; break;
+							}
+		   		        	if ($(this).parent().parent().find('td').eq(index).find('input').val() != tocompare) {
+								autoCalculate(loc,$(this).attr('id'));
+							}
+						}
+					});
+					timeout = null;
+					timeout1 = null;
+				},
+				"Cancel": function() {
+					$(this).dialog('close');
+					$('.checkboxDevices').each(function() {
+						if ($(this).is(':checked')) {
+		   		        	$(this).parent().parent().find('td').eq(11).find('input').val(dateR1);
+		   		        	$(this).parent().parent().find('td').eq(12).find('input').val(timeR1);
+		   		        	$(this).parent().parent().find('td').eq(16).find('input').val(dateR2);
+		   		        	$(this).parent().parent().find('td').eq(17).find('input').val(timeR2);
+		   		        	$(this).parent().parent().find('td').eq(13).find('input').val(intervalR);
+		   		        	$(this).parent().parent().find('td').eq(14).find('input').val(iterationR);
+     						timeout = null;
+					 		timeout1 = null;
+						}
+					});
+				},
+						
+			}
+		});
+		var change = "";
+		if (index == "11") {
+			change = "start date";
+		} else if (index == "12") {
+			change = "start time";
+		  } else if (index == "13") {
+				change = "interval";
+			} else if (index == "14") {
+				change = "iteration";
+		      } else if (index == "16") {
+					change = "end date";
+				} else {
+					change = "end time";
+				  }
+		$('#Alert').empty().append("<div style='color:#39599C;'>Would you like to apply change of "+change+" to all selected device(s)?</div>").dialog("open");	
+		$('.ui-dialog :button').blur();
+	} else if (cnt == 1) {
+		switch (index) {
+			case "11": dateR1 = val; autoCalculate("StartDate","0"); break;
+			case "12": timeR1 = val; autoCalculate("StartTime","0"); timeout1 = null; break;
+			case "16": dateR2 = val; autoCalculate("EndDate","0"); break;
+			case "17": timeR2 = val; autoCalculate("EndTime","0"); timeout1 = null; break;
+			case "13": intervalR = val; timeout = null; break;
+			case "14": iterationR = val;  timeout = null; break;
+		}
+	  }
+}
+function validateTimeDateInfo (val,index,sdate) {
+	console.log(val,index,sdate,'validateee');
+	if (index == "11" || index == "12") {
+		var isvalid = checkValueFirst(val,index,sdate);
+		if ( isvalid ) {
+			switch (index) {
+				case "11": 
+					alerts("Invalid Start Date. Start Date should not be less than the current date."); 
+					$('.checkboxDevices').each(function() {
+						if ($(this).is(':checked')) {
+							if ($(this).parent().parent().find('td').eq(11).find('input').val() == val) {
+								$(this).parent().parent().find('td').eq(11).find('input').val(dateR1)
+							}
+						}
+					});
+				break;
+				case "12": 
+					alerts("Invalid Start Time. Start Time should not be less than the current time.");
+					$('.checkboxDevices').each(function() {
+						if ($(this).is(':checked')) {
+							if ($(this).parent().parent().find('td').eq(12).find('input').val() == val) {
+								$(this).parent().parent().find('td').eq(12).find('input').val(timeR1)
+							}
+						}
+					});
+				break;
+			}
+			return 0;
+		} else {
+			return 1;
+	 	  }
+	} else if (index == "16" || index == "17") {
+		if (index == "16") {
+			if (val < dateR1) {
+				alerts("Invalid End Date. End Date should not be less than the start date."); 
+				$('.checkboxDevices').each(function() {
+					if ($(this).is(':checked')) {
+						if ($(this).parent().parent().find('td').eq(16).find('input').val() == val) {
+							$(this).parent().parent().find('td').eq(16).find('input').val(dateR2)
+						}
+					}
+				});
+				return 0;
+			} else {
+				var isvalid = checkValueFirst(val,index,sdate);
+				if ( isvalid ) {
+					alerts("Invalid End Date. End Date should not be less than the current date.");
+					$('.checkboxDevices').each(function() {
+						if ($(this).is(':checked')) {
+							if ($(this).parent().parent().find('td').eq(16).find('input').val() == val) {
+								$(this).parent().parent().find('td').eq(16).find('input').val(dateR2)
+							}
+						}
+					});
+					return 0;
+				} else {
+					return 1;
+				  }
+			  }
+		} else {
+			if (val < timeR1 && dateR2 == dateR1) {
+				alerts("Invalid End Time. End Time should not be less than the start time."); 
+				$('.checkboxDevices').each(function() {
+					if ($(this).is(':checked')) {
+						if ($(this).parent().parent().find('td').eq(17).find('input').val() == val) {
+							$(this).parent().parent().find('td').eq(17).find('input').val(timeR2)
+						}
+					}
+				});
+				return 0;
+			} else {
+				var isvalid = checkValueFirst(val,index,sdate);
+				if ( isvalid ) {
+					alerts("Invalid End Time. End Time should not be less than the current time."); 
+					$('.checkboxDevices').each(function() {
+						if ($(this).is(':checked')) {
+							if ($(this).parent().parent().find('td').eq(17).find('input').val() == val) {
+								$(this).parent().parent().find('td').eq(17).find('input').val(timeR2)
+							}
+						}
+					});
+					return 0;
+				} else {
+					return 1;
+				  }
+			  }
+		  }
+	  } else {
+			if (timeout == null) {
+				return 0;
+			}
+	    }
+
+}
+function checkValueFirst(val, index,sdate) {
+	console.log('BINGO');
+	var myDate2 = getServerTime();
+    var datetime = myDate2.split(",");
+    var time = datetime[0].split("-");
+	var date = datetime[1].split("-");
+	var hh = time[0];
+	var mm = time[1];
+	var ss = time[2];
+    var mon  = parseInt(date[1])+1;
+	var year;
+	if (mon == 13) {
+		mon = 1;
+		year = parseInt(date[0])+1901;
+	} else {
+	    year = parseInt(date[0])+1900;
+	  }	
+	var day = (date[2]<10) ? '0' + date[2] : date[2];
+	var tt = "am";
+	
+   	if(hh < 10){
+	  	hh = "0" + hh;
+	}
+	if(mm < 10){
+	    mm = "0" + mm;
+	}
+	
+    if(ss < 10){
+        ss = "0" + ss;
+   	}
+
+	if (mon < 10) {
+		mon = "0" +mon;
+	}
+
+	if (day < 10) {
+		day = "0" +day;
+	}
+
+	var tempdate = year+"-"+mon+"-"+day;
+	var temptime = hh+":"+mm+":"+ss;
+	var ret = 0;
+
+	if (globalPageRM == "ReservationDevices") {
+		switch (index) {
+			case "11": case "16":
+				if (val < tempdate) {
+					ret = 1;
+			 	}
+			break;
+			case "12":
+				if (sdate == tempdate && val < temptime) {
+					ret = 1;
+				}
+			break;
+			case "17":
+				var edate = "";
+				$('.checkboxDevices').each(function() {
+					if ($(this).is(':checked')) {
+						if ($(this).parent().parent().find('td').eq(17).find('input').val() == val) {
+							edate = $(this).parent().parent().find('td').eq(16).find('input').val()
+						}
+					}
+				});
+				if (edate == sdate) {
+					if (sdate == tempdate && val < temptime) {
+						ret = 1;
+					}
+				}
+			break;
+		}
+	} else {
+		switch (index) {
+			case "8": case "17":
+				if (val < tempdate) {
+					ret = 1;
+			 	}
+			break;
+			case "9":
+				if (sdate == tempdate && val < temptime) {
+					ret = 1;
+				}
+			break;
+			case "18":
+				var edate = "";
+				$('.resres').each(function() {
+					if ($(this).is(':checked')) {
+						if ($(this).parent().parent().find('td').eq(18).find('input').val() == val) {
+							edate = $(this).parent().parent().find('td').eq(17).find('input').val()
+						}
+					}
+				});
+				if (edate == sdate) {
+					if (sdate == tempdate && val < temptime) {
+						ret = 1;
+					}
+				}
+			break;
+		}
+	}
+
+	return ret;
+	
+}
+function autoCalculate(position,flag) {
+
+	switch (position) {
+		case "StartDate":
+			if (flag == "0") {
+				if (dateR1 > dateR2) {
+					if (timeR1 > timeR2) {
+						changeEndTime(flag,"");
+					} else {
+						makeEqualDate("dateR1",flag);
+	  				  }	
+				} 
+			} else {
+				var d1 = $('#'+flag).parent().parent().find('td').eq(11).find('input').val();
+				var t1 = $('#'+flag).parent().parent().find('td').eq(12).find('input').val();
+				var d2 = $('#'+flag).parent().parent().find('td').eq(16).find('input').val();
+				var t2 = $('#'+flag).parent().parent().find('td').eq(17).find('input').val();
+				if (d1 > d2) {
+					if (t1 > t2) {
+						changeEndTime(flag,t1);
+					} else {
+						makeEqualDate("d1",flag);
+	  				  }	
+				} 
+			  }
+		break;
+		case "StartTime":
+			if (flag == "0") {
+				if (dateR1 > dateR2) {
+					if (timeR1 < timeR2) {
+						makeEqualDate("dateR1",flag);
+					} else {
+						changeEndTime(flag,"");
+		              }
+				} else if (dateR1 == dateR2) {
+					if (timeR1 > timeR2) {
+						changeEndTime(flag,0);
+					}
+              	  }
+			} else {
+				var d1 = $('#'+flag).parent().parent().find('td').eq(11).find('input').val();
+				var t1 = $('#'+flag).parent().parent().find('td').eq(12).find('input').val();
+				var d2 = $('#'+flag).parent().parent().find('td').eq(16).find('input').val();
+				var t2 = $('#'+flag).parent().parent().find('td').eq(17).find('input').val();
+				if (d1 > d2) {
+					if (t1 < t2) {
+						makeEqualDate("d1",flag);
+					} else {
+						changeEndTime(flag,t1);
+	  				}	
+				} else if (d1 == d2) {
+					if (t1 > t2) {
+						changeEndTime(flag,t1);
+					}
+				  }
+			  }
+		break;
+		case "EndDate":
+			if (flag == "0") {
+				if (dateR1 > dateR2) {
+					if (timeR1 > timeR2) {
+						changeStartTime(flag,"");
+					} else {
+						makeEqualDate("dateR2",flag);
+  				  	  }	
+				} 
+			} else {
+				var d1 = $('#'+flag).parent().parent().find('td').eq(11).find('input').val();
+				var t1 = $('#'+flag).parent().parent().find('td').eq(12).find('input').val();
+				var d2 = $('#'+flag).parent().parent().find('td').eq(16).find('input').val();
+				var t2 = $('#'+flag).parent().parent().find('td').eq(17).find('input').val();
+				if (d1 > d2) {
+					if (t1 > t2) {
+						changeStartTime(flag,t2);
+	  				} else {
+						makeEqualDate("d2",flag);
+				      }	
+				}
+
+			  }
+		break;
+		case "EndTime":
+			if (flag == "0") {
+				if (dateR1 > dateR2) {
+					if (timeR1 < timeR2) {
+						makeEqualDate("dateR2",flag);
+					} else {
+						changeStartTime(flag,"");
+	              	  }
+				} else if (dateR1 == dateR2) {
+					if (timeR1 > timeR2) {
+						changeStartTime(flag,"");
+					}
+              	  }
+			} else {
+				var d1 = $('#'+flag).parent().parent().find('td').eq(11).find('input').val();
+				var t1 = $('#'+flag).parent().parent().find('td').eq(12).find('input').val();
+				var d2 = $('#'+flag).parent().parent().find('td').eq(16).find('input').val();
+				var t2 = $('#'+flag).parent().parent().find('td').eq(17).find('input').val();
+				if (d1 > d2) {
+					if (t1 < t2) {
+						makeEqualDate("d2",flag);
+					} else {
+						changeStartTime(flag,t2);
+	              	  }
+				} else if (dateR1 == dateR2) {
+					if (timeR1 > timeR2) {
+						changeStartTime(flag,t2);
+					}
+              	  }
+
+
+			  }
+		break;
+
+	}
+
+}
+function makeEqualDate(toDate,flag) {
+
+	var index = "";
+	var newvalue = "";
+	if (toDate == "dateR1") {
+		dateR2 = dateR1;
+		newvalue = dateR1;
+		index = "16";
+	} else if (toDate == "dateR2") {
+		dateR1 = dateR2;
+		newvalue = dateR2;
+		index = "11";
+	  } else if (toDate == "d1") {
+			newvalue = $('#'+flag).parent().parent().find('td').eq(11).find('input').val();
+			index = "16";
+		} else {
+			newvalue = $('#'+flag).parent().parent().find('td').eq(16).find('input').val();
+			index = "11";
+			
+		  }
+
+	var clname = "";
+	if (flag == "0") {
+		$('.checkboxDevices').each(function() {
+			if ($(this).is(':checked')) {
+    		   	$(this).parent().parent().find('td').eq(index).find('input').val(newvalue);
+			}
+		});
+	} else {
+		$('#'+flag).parent().parent().find('td').eq(index).find('input').val(newvalue);
+	  }
+
+}
+function changeStartTime(flag,time) {
+
+	var timeInfo;
+	var newstartdate = "";
+	if (flag == "0") {
+		timeInfo = timeR2.split(":");
+	} else {
+		timeInfo = time.split(":");
+	  }
+	var hh = timeInfo[0];
+	var mm = timeInfo[1];
+	var ss = timeInfo[2];
+
+	if (/^0/i.test(hh)) {
+	   	var f = hh[1];
+	    hh = f;
+	}
+	hh = parseInt(hh) - 2;
+	if (hh < 0) {
+		if (hh == -1) {
+			hh = "23";
+		} else {
+			hh = "22";
+		  }
+		if (flag != "0") {
+			newstartdate = $('#'+flag).parent().parent().find('td').eq(13).find('input').val();
+		} 
+		changeStartDate(flag,newstartdate);
+	} else if (hh < 10) {
+		hh = "0" + hh;
+	  }
+
+	var clname = "";
+
+
+
+	if (flag == "0") {
+		timeR1 = hh+":"+mm+":"+ss;
+		$('.checkboxDevices').each(function() {
+			if ($(this).is(':checked')) {
+  	        	$(this).parent().parent().find('td').eq(12).find('input').val(timeR1);
+			}
+		});
+	} else {
+		$('#'+flag).parent().parent().find('td').eq(12).find('input').val(hh+":"+mm+":"+ss);
+	  }
+
 }
