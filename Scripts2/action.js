@@ -580,6 +580,7 @@ function clearCanvas(){
 	globalMAINCONFIG[pageCanvas].MAINCONFIG[0].DateTIME = "";
 	globalMAINCONFIG[pageCanvas].MAINCONFIG[0].ReservationType = "";
 	globalMAINCONFIG[pageCanvas].MAINCONFIG[0].Offset = "";
+	globalMAINCONFIG[pageCanvas].MAINCONFIG[0].ResourceId="";
 	drawImage();
 	createConfigName();
 	$("#configDialog").dialog("destroy");

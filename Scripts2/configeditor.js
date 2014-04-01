@@ -2534,7 +2534,7 @@ function drawImage(flag,newscale){
     $('.canvasID'+pageCanvas).remove();
     $("#configContent"+pageCanvas+" canvas").attr("class", "canvasID"+pageCanvas);
     $("#configContent"+pageCanvas+" canvas").attr("id", "canvasID"+pageCanvas);
-	bug_workaround();
+
     if (flag=="true"){
         window['variable' + dynamicLayer[pageCanvas]].setAttrs({x: window['globalNavigator'+ pageCanvas]['Stage']['dragX'], y:window['globalNavigator'+ pageCanvas]['Stage']['dragY']});
         duplicateOnMinimap("true");
@@ -2548,12 +2548,7 @@ function drawImage(flag,newscale){
 		return;
     }
 }
-function bug_workaround() {
-  $('.canvasID'+pageCanvas).css({"opacity":"0.99"});
-  setTimeout(function() {
-    $('.canvasID'+pageCanvas).css({"opacity":"1"});
-  }, 1);
-}
+
 
 /*######################################################################
  *

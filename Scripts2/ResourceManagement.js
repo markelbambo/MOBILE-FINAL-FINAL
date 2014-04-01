@@ -6449,7 +6449,7 @@ function checkSingleRM(table,src){
 				$(this).parent().parent().removeClass('highlight');
 			}
 			ctrtotal++;
-		//	enDisEditDelBtnManageDev();
+			enDisEditDelBtnManageDev();
 		});
 		
 	}

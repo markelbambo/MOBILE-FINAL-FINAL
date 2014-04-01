@@ -251,6 +251,7 @@ function LoadPowerManagement(action,page,limit,ip,id,tb) {
 				var jsonData = $.parseJSON(dat);
 				var totMatch = jsonData.data[0].Total;
 				PMAttribJSON(jsonData,tb);
+				pmPagination(jsonData.data[0].Pages, jsonData.data[0].Page,totMatch);
 			}
 			$('#PMTotalMatches').empty().append(totMatch);
 		}
@@ -602,6 +603,7 @@ function LoadOutlet(ip){
 			var totMatch = dat.data[0].total;
 			outletAttrJSON(dat);
 			$('#PMTotalMatches').empty().append(totMatch);
+			pmPagination(dat.data[0].pages,dat.data[0].page,totMatch);
 		}
 	});
 	$('#divTotal').show();
@@ -854,7 +856,7 @@ function LoadPDULogs(ip){
 			}else{
 				dat2 = data.replace(/'/g,'"');
 				var jsonData = $.parseJSON(dat2);
-				var totMatch = jsonData.data[0].total;
+				var totMatch = jsonData.data[0].Total;
 //				var = dat.row;
 				pduLogsAttrJSON(jsonData);
 			}
@@ -3233,4 +3235,83 @@ function EditInletJSON(SType){
 //		}
 	console.log("powerdata: "+powerdata);
 	return powerdata;
+}
+
+/*
+ *  #######################################################################
+ *  #
+ *  #  FUNCTION NAME : pmPagination
+ *  #  AUTHOR        : Angeline Bringas
+ *  #  DATE          : March 14,2014
+ *  #  MODIFIED BY   : 
+ *  #  REVISION DATE : 
+ *  #  REVISION #    : 
+ *  #  DESCRIPTION   : pagination
+ *  #  PARAMETERS    :
+ *  #
+ *  #######################################################################
+ *  */
+
+
+function pmPagination(pages,page,total){
+    $('#PMTotalPages').html(pages);
+    $('#PMPageNumber').html(page);
+    $("#PMTotalMatches").html(total);
+    var str = "";
+
+
+    for (var l = 1,m=0,n=4; l <= pages && m < 6 && n>-1; l++,m++,n--) {
+         if (page <= 5) {
+            str+="<a href='#' class='togglePage' style='text-decoration:none;color:#39599C;' id='PMPages"+l+"'>"+l+"</a>&nbsp";
+
+         } else {
+            str+="<a href='#' class='togglePage' style='text-decoration:none;color:#39599C;' id='PMPages"+(page-n)+"'>"+(page-n)+"</a>&nbsp";
+ 
+         }
+    }
+    $('#PMPages').html(str);
+	$('.togglePage').click(function(){
+		$('#PMPageNumber').html($(this).text());
+//<<<<<		rmReloadTable();
+	});
+}
+/*
+ *  #######################################################################
+ *  #
+ *  #  FUNCTION NAME : setPagination
+ *  #  AUTHOR        : Angeline Bringas
+ *  #  DATE          : March 14,2014
+ *  #  MODIFIED BY   : 
+ *  #  REVISION DATE : 
+ *  #  REVISION #    : 
+ *  #  DESCRIPTION   : pagination
+ *  #  PARAMETERS    : type
+ *  #
+ *  #######################################################################
+ *  */
+
+
+function pmsetPagination(type){
+    var curr = parseInt($('#PMPageNumber').text());
+    var totalpage = $('#PMTotalPages').text();
+    switch(type){
+        case "first":
+            curr = 1;
+        break;
+        case "prev":
+            if(curr > 1){
+                curr = curr - 1;
+            }
+        break;
+        case "next":
+            if(curr < totalpage){
+                curr = curr + 1;
+            }
+        break;
+        case "last":
+            curr = totalpage;
+        break;
+    }
+    $('#PMPageNumber').text(curr);
+//<<<<<	rmReloadTable();
 }

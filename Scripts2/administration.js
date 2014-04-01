@@ -162,10 +162,8 @@ function saveEditedEmail(){
 }
 
 function pagination(total, type){
-//	var first;var second; var third; var fourth; var fifth;
 	var num="";
-	//var limit=document.getElementById("limitOption").value;
-	var limit = $('#limitOption').val();
+	var limit = $('#limitOption option:selected').val();
 	GlobalPageType = type;
 	TotalRowData = total;	
 	pagelimit=limit;
@@ -272,6 +270,8 @@ function loadAdminFunctions(){
 		loadDomainBoundtoUser();	
 	}else if(GlobalPageType=='device'){
 		loadManageDevice(PerPage);
+	}else if(GlobalPageType=='route'){
+		loadStaticRoute();
 	}
 
 }
@@ -642,6 +642,7 @@ function loadPower(){
 			var totMatch = jsonData.data[0].total;
 			$('#adminTotalMatches').empty().append(totMatch);
 			pagination(totMatch, "power");
+			if(jsonData.data[0].row){
 			for (var a=0;a<jsonData.data[0].row.length;a++){
 				var row = jsonData.data[0].row[a];
 				if(globalDeviceType != "Mobile"){
@@ -662,6 +663,7 @@ function loadPower(){
 				str += "<td>"+row.DateAdded+"</td>";
 				str += "</tr>";
 			
+			}
 			}
 			$('#powerAdmin-table > tbody').empty().append(str);
 			if(globalDeviceType != "Mobile"){
@@ -1443,6 +1445,15 @@ function loadUserData(id){
 				if ($.inArray(activeDom,globalDomActiveStatus)== -1){
 					globalDomActiveStatus.push(activeDom);
 				}
+				var activeAccRi = row.ActiveAccessRight;
+				for (var r=0;r<remActiveAccRi.length;r++){
+					if (activeAccRi == remActiveAccRi[i]){
+						activeAccRi = "";
+					}
+				}
+				if ($.inArray(activeAccRi,globalAccActiveStatus)== -1){
+					globalAccActiveStatus.push(activeAccRi);
+				}
 				
 				oldpassword = row.Password;
 				var user = row.UserName;
@@ -2208,6 +2219,33 @@ function checkAllAdminTable(){
 			}
 		});
 	}
+	if($('#checkAllStatRte').is (':checked')){
+		$(".trRoute").each(function(){
+			var val = $(this).attr('id');	
+			if($.inArray(val, globalSelectedAdminMain) == -1){
+				globalSelectedAdminMain.push(val);
+				if(globalDeviceType != "Mobile"){
+					$(this).prop('checked',true);
+					$('#tr'+val).addClass('highlight');
+				}else{
+					$(this).addClass('highlight');
+				}
+			}
+		});
+	}else{
+		$(".trRoute").each(function(){
+			var val = $(this).attr('id');
+			var pos = globalSelectedAdminMain.indexOf(val);
+			globalSelectedAdminMain.splice(pos,1);
+			if(globalDeviceType != "Mobile"){
+				$(this).prop('checked',false);
+				$('#tr'+val).removeClass('highlight');
+			}else{
+				$(this).removeClass('highlight');
+			}
+		});
+	}
+
 	userBtnValidation();
 }
 /*
@@ -2707,8 +2745,8 @@ function addServerInfoPopUp(){
 		$('span.ui-dialog-title').text('ADD SERVER INFO');
 
 			$(".ui-dialog").position({
-			   my: "center",
-			   at: "center",
+			   my: "top",
+			   at: "top",
 			   of: window
 			});
 
@@ -2729,15 +2767,39 @@ function addServerInfoPopUp(){
  #######################################################################
 */
 var ServerIP;
-function gatherServerInfo(){
-	var server=$('#addServerIPID').val();
-	ServerIP=server;
-	if($.trim(server)==""){
-		alerts('Please input the Server IP Address');
-		return;
+function gatherServerInfo(type){
+	if(type=='add'){
+		var server=$('#addServerIPID').val();
+		ServerIP=server;
+		if($.trim(server)==""){
+			alerts('Please input the Server IP Address');
+			return;
+		}
+		var url = getURL('ConfigEditor', 'JSON')+"action=instantiateServer&query={'QUERY': [{'ServerIp':'"+ServerIP+"'}]}";
+		gatherServerQuery(url);
+	}else{
+		$( "#staticRoute" ).dialog({
+			modal: true,
+			autoResize:true,
+			width: 300,
+			height: "auto",
+			buttons: {
+				"Yes": function(){
+					var url = getURL('ConfigEditor', 'JSON')+"action=instantiateServer&query={'QUERY': [{'ServerIp':'"+ServerIP+"', 'id': '"+serverIds+"'}]}";
+					gatherServerQuery(url);
+					$(this).dialog('destroy');
+					$('#staticRoute').remove();
+				},
+				"No": function(){
+					$(this).dialog('destroy');
+					$('#staticRoute').remove();
+				}
+			}
+		});
+		$('#staticRoute').text('Are you sure you want to refresh the server information? All changes made to the server information will be lost.');
 	}
-
-	var url = getURL('ConfigEditor', 'JSON')+"action=instantiateServer&query={'QUERY': [{'ServerIp':'"+server+"'}]}";
+}
+function gatherServerQuery(url){
 	$.ajax({
 		url: url,
 		dataType: 'html',
@@ -2779,6 +2841,7 @@ function gatherServerInfo(){
 var Interfaces=[];
 var SourcePopup;
 function addServerContent(host, ntp, intr, gt){
+	console.log(host+' '+ntp+' '+intr+' '+gt);
 	var intSplit=[];var intVal=[];
 	var mngtStr="";var ctrlStr="";
 	$( "#AdminPopUp" ).dialog({
@@ -2810,7 +2873,7 @@ function addServerContent(host, ntp, intr, gt){
 		for(var a=0; a<intSplit.length; a++){
 			intVal=intSplit[a].split('-');
 			mngtStr += "<option>"+intVal[0]+"</option>";
-			Interfaces = Interfaces.push(intVal[0]);
+			Interfaces.push(intVal[0]);
 			if(a==0){
 				ctrlStr += "<option>"+intVal[0]+"</option>";		
 			}else if(a==1){
@@ -2977,17 +3040,6 @@ function serverBtnValidation(){
 	}
 }
 
-/*function checkAllServerInfo(){
-	$("input:checkbox[name='trServerInfo']").each(function(){
-		if($('.serverCheckAll').is(':checked')){
-			$(this).prop('checked', true);
-		}else{
-			$(this).prop('checked', false);
-			//serverIds=[];
-		}
-	});
-
-}*/
 /*
  #######################################################################
  #
@@ -3419,7 +3471,7 @@ function loadStaticRoute(type){
 	}else{
 		$('#staticRteContent').show();
 	}
-	var url =  getURL('ADMIN2', 'JSON')+"action=getStaticRoutes2&query={'QUERY':[{'Limit': '"+pagelimit+"', 'Page': '"+PerPage+"', 'ServerIp': '172.24.1.11', 'ServerId':'"+serverIds+"'}]}";
+	var url =  getURL('ADMIN2', 'JSON')+"action=getStaticRoutes&query={'QUERY':[{'Limit': '"+pagelimit+"', 'Page': '"+PerPage+"', 'ServerIp': '172.24.1.11', 'ServerId':'"+serverIds+"'}]}";
 	$.ajax({
 		url: url,
 		dataType: 'html',
@@ -3427,23 +3479,26 @@ function loadStaticRoute(type){
 			data = data.replace(/'/g, '"');
 			var jsonData = $.parseJSON(data);
 			var res = jsonData.data[0].row;
+			var total = jsonData.data[0].total;
+			pagination(total, 'route');
+			
 			var str="";
 			if(res.length==0){
 				$('#statRteLi').hide();
 			}else{
 				$('#statRteLi').show();
-				$('#statRouteTotalMatches').html(jsonData.data[0].total);
+				$('#statRouteTotalMatches').html(total);
 				
 				for(var a=0; a<res.length; a++){
-					str += "<tr id='rte"+res[a].StaticRouteId+"'><td><input type='checkbox' name='statRteCheck' id='"+res[a].StaticRouteId+"'></td>";
+					str += "<tr id='rte"+res[a].StaticRouteId+"'><td><input type='checkbox' class='trRoute' name='statRteCheck' id='"+res[a].StaticRouteId+"' onclick='checkStatRoute();'></td>";
 					str += "<td>"+res[a].Destination+"</td>";		
 					str += "<td>"+res[a].Gateway+"</td>";	
-					str += "<td>"+res[a].Genmask+"</td>";
+					str += "<td>"+res[a].GenMask+"</td>";
 					str += "<td>"+res[a].Flags+"</td>";
 					str += "<td>"+res[a].MSS+"</td>";
 					str += "<td>"+res[a].Window+"</td>";
 					str += "<td>"+res[a].Irtt+"</td>";
-					str += "<td>"+res[a].Iface+"</td></td>";
+					str += "<td>"+res[a].Interface+"</td></td>";
 				}
 				$('#staticRteBody').html(str);
 			}
@@ -3529,6 +3584,24 @@ function addStaticPopup(type){
 
 	});
 }
+
+function checkStatRoute(){
+	var ctr=0;var ctrAll=0;
+	$("input:checkbox[name='statRteCheck']").each(function(){
+		if($(this).is(':checked')){
+			ctr++;
+		}else{
+			ctr--;
+		}
+		ctrAll++;
+	});
+	if(ctr==ctrAll){
+		$('#checkAllStatRte').prop('checked',true);
+	}else{
+		$('#checkAllStatRte').prop('checked',false);
+	}
+}
+
 /*
  #######################################################################
  #
@@ -6032,8 +6105,8 @@ function saveJSON(qstr, exec, header) {
  #######################################################################
 */
 
-function getpageLimit(){
-//	pagelimit += 20;
+function getpageLimit(val){
+	pagelimit = val;
 	if (globalAdminPage == 'Users'){
 		loadUserTable();
 	}else if (globalAdminPage == 'AccRights'){
@@ -7725,7 +7798,6 @@ function saveAddEditUser(){
 	var qstr1 = checkUserInformation();
 	var qstr2 = checkEmployeeInfo();
 	var qstr3 = checkAccountInfo();
-
 	if (qstr1 == "" || qstr2 == "" || qstr3 == "") {
 
 		alertUser("Please fill in all required information on the User Data tab.");
@@ -8008,7 +8080,6 @@ function checkUserInformation(){
 	var hadd = $("#addtxtHomeAdd").val();
 	var country = $("#addtxtCountry option:selected").text();
 	var email = $("#addtxtEmail").val();
-	console.log('COUNTRY:', country);	
 	
 	if ( fname == "" || lname == "" || email == "") {
 		var qstr = "";
@@ -8036,7 +8107,6 @@ function checkUserInformation(){
 */
 
 function checkEmployeeInfo() {
-
 	var notrequired  = new Array('addtxtEmployNo','addtxtOfficeAdd','addtxtDivision');
 	for (var i=0;i<notrequired.length;i++){
 		if ($('#'+notrequired[i]).val() == undefined || $('#'+notrequired[i]).val() == null || $('#'+notrequired[i]).val() == "undefined"){
@@ -8048,7 +8118,6 @@ function checkEmployeeInfo() {
 	var offadd = $("#addtxtOfficeAdd").val();
 	var div = $("#addtxtDivision").val();
 	var dir = "";
-	console.log('COMPANY:', comp);
 
 	if ($('#directreportselect2').attr('disabled') == false) {
 		dir = $("#directreportselect2").val();
@@ -9932,23 +10001,19 @@ function addUserPy(qstr,uname,pass,todo) {
         success: function(data) {
 			var data = data.replace(/'/g,'"');
 			var jsonData = $.parseJSON(data);
-			if(jsonData.RESULT[0].Result.toLowerCase()=="add successful"){
-				var str = jsonData.RESULT[0].Result;
-	            alertUser(str);
+			var str = jsonData.RESULT[0].Result;
+			var flag = jsonData.RESULT[0].Flag;
+            alertUser(str);
+			if (globalAdminFunc == 'add'){
 				createFtpUser(uname,pass);
-//			var uname = $("#addtxtUserName").val();
-//			var fname = $("#addtxtFirstName").val()+" "+$("#addtxtLastName").val();
-//			var email = $("#addtxtEmail").val();
-//			var newtodo = "sendemail('"+fname+"','"+uname+"','"+email+"','"+resDomEmail+"');"+todo;
-	           eval(todo);
-			}else{
-				alertUser("Add Unsuccessful!");
 			}
-
+			if(flag == '1'){
+           		eval(todo);
+			}
         }
     });
-
 }
+
 /*
  #######################################################################
  #
@@ -10262,7 +10327,6 @@ function loadDomainZoneTab(){
 		success: function(data){
 			data = data.replace(/'/g,'"');
 			var jsonData = jQuery.parseJSON(data);
-			console.log("jsonData:",jsonData);
 			var num = jsonData.data[0].total
 			if(num=="0"){
 				return 1
@@ -11731,7 +11795,6 @@ function showAdminPowerPolicyTable(){
 		success: function(data){
 			data = data.replace(/'/g,'"');
 			var jsonData = jQuery.parseJSON(data);
-			console.log("jsonData:",jsonData);
 			var num = jsonData.data[0].total
 			if(num=="0"){
 				return 1

@@ -1532,9 +1532,13 @@ $( document ).on( "pageinit", "#configEditorPage", function( event ) {
 		}
 	});
 	$(document).on('click', '#loadactive', function() {
-		var devices = getDevicesNodeJSON();
+		if(globalInfoType == "JSON"){
+  	      var devices = getDevicesNodeJSON();
+    	}else{
+        	 var devices =devicesArr;
+	    }
     	if(devices.length >0){
-        	confirmationloadactive("Devices on the canvas will be cleared for this action.<br/> Do you want to continue?","Warning","loadActiveTableQuery();addHistory('Load Active');");
+        	confirmation("Devices on the canvas will be cleared for this action.<br/> Do you want to continue?","Warning","clearCanvas();loadActiveTableQuery();addHistory('Load Active');");
 	        return;
     	}else{
 			loadActiveTableQuery();
@@ -1553,6 +1557,13 @@ $( document ).on( "pageinit", "#configEditorPage", function( event ) {
         }else{
             var devices =devicesArr;
         }
+		var devCtr = 0;
+		for(var a=0; a < devices.length;a++){
+			if(devices[a].Status.toLowerCase() != "reserved"){
+				devCtr++;
+			}
+		}
+		if(devCtr==0){alertUser('Topology was already reserved');return;}
 		if(devices.length > 0){
 /*	        $(this).attr("src","img/action_buttons/commitActive.png");
     	    $("#applyall").attr("src","img/action_buttons/applyall.png");
@@ -1765,11 +1776,7 @@ $( document ).on( "pageinit", "#loadActivePop", function( event ) {
 			reverse: false,
 			changeHash: true
 		});
-		if(ReleaseFlagLoadActive){
-			cancelReservation();
-		}else{
-			showActiveTopology();
-		}
+		showActiveTopology();
     });
 	$(document).on('click', '#CloseALButton', function() {
    	   	$.mobile.changePage("#configEditorPage", {

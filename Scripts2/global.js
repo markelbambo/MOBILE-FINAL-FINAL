@@ -418,6 +418,7 @@ var statId = [];
 
 /* ADMINISTRATION */
 var remActiveDom = new Array();
+var remActiveAccRi = new Array();
 var globalUserLoad = "";
 var globalAddUserPolIds = new Array();
 var globalSelectedAdminMain = new Array();
